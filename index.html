@@ -10,6 +10,8 @@
     <!-- Leaflet Map CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- On-Device Instant OCR Fallback (Tesseract.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         .pulse-ring {
@@ -42,7 +44,7 @@
                 <button onclick="toggleSettings()" class="text-slate-400 hover:text-slate-600 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <p class="text-xs text-slate-500 mb-4 leading-relaxed">
-                Paste your deployed <b>Google Apps Script Web App URL</b> below to sync logins, 30-sec GPS logs, route history maps, AI phone OCR, Google Drive photos, and Telegram alerts.
+                Paste your deployed <b>Google Apps Script Web App URL</b> below. <i>Tip: Adding your Gemini API Key here makes cloud AI OCR 3x faster (~1 sec), with automatic on-device OCR backup!</i>
             </p>
             <div class="space-y-4">
                 <div>
@@ -51,7 +53,7 @@
                         class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Gemini API Key (Optional if set in Code.gs)</label>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Gemini API Key (Optional Direct Mode)</label>
                     <input type="password" id="gemini-key-input" placeholder="AIzaSy..." 
                         class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
@@ -69,7 +71,6 @@
     <!-- ========================================== -->
     <div id="login-screen" class="flex-1 flex flex-col justify-center items-center p-4">
         <div class="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-100 p-8 relative">
-            <!-- Settings Gear Button -->
             <button onclick="toggleSettings()" title="Configure Google Sheet Backend" class="absolute top-5 right-5 text-slate-400 hover:text-blue-600 p-2 rounded-full hover:bg-slate-100 transition">
                 <i class="fa-solid fa-gear text-lg"></i>
             </button>
@@ -82,7 +83,6 @@
                 <p class="text-sm text-slate-500 mt-1">Real Estate Agent Portal & Sign Scanner</p>
             </div>
 
-            <!-- Connection Mode Badge -->
             <div class="mb-6 flex justify-center">
                 <span id="mode-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
                     <span class="w-2 h-2 rounded-full bg-amber-500"></span> Demo Mode (No Sheet URL)
@@ -129,7 +129,6 @@
     <!-- ========================================== -->
     <div id="dashboard-screen" class="hidden flex-1 flex flex-col max-w-lg mx-auto w-full bg-white sm:my-4 sm:rounded-3xl sm:shadow-xl sm:border border-slate-100 overflow-hidden">
         
-        <!-- Top Navigation Header -->
         <header class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold text-sm" id="agent-avatar">
@@ -150,7 +149,6 @@
             </div>
         </header>
 
-        <!-- Main Scrollable Content -->
         <main class="flex-1 p-5 space-y-6 overflow-y-auto">
 
             <!-- SECTION A: 30-Second Live GPS Tracking Card -->
@@ -195,7 +193,6 @@
                 </div>
 
                 <div class="p-3 space-y-3">
-                    <!-- Day Filter Pills -->
                     <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs" id="day-filter-bar">
                         <button type="button" onclick="filterMapByDay('ALL')" class="day-filter-btn active px-2.5 py-1 rounded-full font-semibold bg-indigo-600 text-white whitespace-nowrap">
                             All Days
@@ -217,29 +214,26 @@
                         </button>
                     </div>
 
-                    <!-- Interactive Leaflet Map Container -->
                     <div class="rounded-xl overflow-hidden border border-slate-200 relative">
                         <div id="history-map"></div>
                     </div>
 
-                    <!-- Route Legend / Summary -->
                     <div id="route-legend" class="flex flex-wrap gap-1.5 text-[11px] text-slate-600">
                         <span class="text-slate-400">Loading route history...</span>
                     </div>
                 </div>
             </section>
 
-            <!-- SECTION C: AI Rental Sign Scanner & Submission -->
+            <!-- SECTION C: Hybrid AI + On-Device Rental Sign Scanner -->
             <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div class="bg-blue-50/70 px-4 py-3 border-b border-blue-100 flex items-center justify-between">
                     <h3 class="font-bold text-sm text-blue-950 flex items-center gap-2">
                         <i class="fa-solid fa-camera text-blue-600"></i> Capture Rental Property Sign
                     </h3>
-                    <span class="text-[11px] font-semibold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-md">Auto Property Code</span>
+                    <span class="text-[11px] font-semibold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-md"><i class="fa-solid fa-bolt"></i> Hybrid AI + Local OCR</span>
                 </div>
 
                 <div class="p-4 space-y-4">
-                    <!-- Camera / Photo Upload Box -->
                     <div id="camera-dropzone" class="relative border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:border-blue-500 transition bg-slate-50/50">
                         <input type="file" id="sign-photo-input" accept="image/*" capture="environment" onchange="handlePhotoCapture(event)" 
                             class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
@@ -249,47 +243,42 @@
                                 <i class="fa-solid fa-camera-retro text-xl"></i>
                             </div>
                             <p class="text-sm font-semibold text-slate-700">Tap to Take Photo of Rental Sign</p>
-                            <p class="text-xs text-slate-400">AI extracts owner phone numbers & generates a Property Code</p>
+                            <p class="text-xs text-slate-400">Extracts phone numbers automatically & assigns Property Code</p>
                         </div>
 
-                        <!-- Image Preview + AI Scanning Overlay -->
                         <div id="photo-preview-container" class="hidden relative">
                             <img id="photo-preview" src="" alt="Property Sign" class="w-full max-h-56 object-cover rounded-xl shadow-sm">
                             <div class="absolute top-2 right-2 z-20 flex items-center gap-1.5">
-                                <button type="button" onclick="retryAiScan()" title="Re-scan photo with AI" class="bg-blue-600/90 text-white px-2.5 h-8 rounded-full flex items-center justify-center gap-1 text-xs font-semibold hover:bg-blue-700 transition shadow">
-                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Retry AI
+                                <button type="button" onclick="retryAiScan()" title="Re-scan photo" class="bg-blue-600/90 text-white px-2.5 h-8 rounded-full flex items-center justify-center gap-1 text-xs font-semibold hover:bg-blue-700 transition shadow">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Re-Scan
                                 </button>
                                 <button type="button" onclick="resetPhoto()" title="Remove photo" class="bg-slate-900/75 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose-600 transition shadow">
                                     <i class="fa-solid fa-trash-can text-xs"></i>
                                 </button>
                             </div>
                             
-                            <!-- AI Loading Overlay -->
                             <div id="ai-scanning-overlay" class="hidden absolute inset-0 bg-slate-900/75 backdrop-blur-xs rounded-xl flex flex-col items-center justify-center text-white p-4">
-                                <i class="fa-solid fa-wand-magic-sparkles fa-bounce text-2xl text-blue-400 mb-2"></i>
-                                <p class="text-sm font-bold">AI Reading Signboard...</p>
-                                <p class="text-xs text-slate-300 mt-1">Extracting phone numbers & sign text</p>
+                                <i class="fa-solid fa-bolt fa-bounce text-2xl text-amber-400 mb-2"></i>
+                                <p id="scan-status-title" class="text-sm font-bold">Scanning Sign Phone Number...</p>
+                                <p id="scan-timer-text" class="text-xs text-slate-300 mt-1">0.0s</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Visible AI Error / Diagnostic Alert Box -->
-                    <div id="ai-error-box" class="hidden bg-rose-50 border border-rose-200 text-rose-800 rounded-xl p-3 text-xs flex items-start gap-2">
-                        <i class="fa-solid fa-triangle-exclamation text-rose-600 mt-0.5"></i>
+                    <div id="ai-error-box" class="hidden bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-3 text-xs flex items-start gap-2">
+                        <i class="fa-solid fa-circle-info text-amber-600 mt-0.5"></i>
                         <div class="flex-1">
-                            <span class="font-bold block">AI Phone Scan Notice:</span>
+                            <span class="font-bold block">Scan Notice:</span>
                             <span id="ai-error-text" class="break-words"></span>
                         </div>
                     </div>
 
-                    <!-- Agent Review & Input Form -->
                     <form id="property-form" onsubmit="submitPropertyData(event)" class="space-y-3.5">
 
-                        <!-- AI Recognized Owner Phone Numbers -->
                         <div>
                             <label class="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1">
                                 <span>Owner Phone Number(s) <span class="text-rose-500">*</span></span>
-                                <span id="ai-badge" class="hidden text-[11px] text-emerald-600 font-medium"><i class="fa-solid fa-check-circle"></i> AI Detected</span>
+                                <span id="ai-badge" class="hidden text-[11px] text-emerald-600 font-medium"><i class="fa-solid fa-check-circle"></i> Auto-Detected</span>
                             </label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
@@ -300,7 +289,6 @@
                             </div>
                         </div>
 
-                        <!-- Real Location (GPS + Address) -->
                         <div>
                             <label class="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1">
                                 <span>Real Location (GPS & Map Link) <span class="text-rose-500">*</span></span>
@@ -318,7 +306,6 @@
                             <p id="gps-helper-text" class="hidden text-[11px] text-amber-600 mt-1"></p>
                         </div>
 
-                        <!-- Property Type -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Property Type <span class="text-rose-500">*</span></label>
                             <select id="property-type" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white">
@@ -330,14 +317,12 @@
                             </select>
                         </div>
 
-                        <!-- Agent Remark -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Agent Review & Remark</label>
                             <textarea id="agent-remark" rows="2" placeholder="Price on sign, condition, street width, or notes..."
                                 class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"></textarea>
                         </div>
 
-                        <!-- Submit Button -->
                         <button type="submit" id="submit-property-btn" 
                             class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-blue-600/20 transition flex items-center justify-center gap-2">
                             <i class="fa-solid fa-paper-plane"></i>
@@ -372,7 +357,8 @@
         let trackingInterval = null;
         let geoWatchId = null;
         let pingCount = 0;
-        let currentPhotoBase64 = null;
+        let currentPhotoBase64 = null;      // Full HD (1024px) for Google Drive upload
+        let currentFastOcrBase64 = null;    // Lightweight (512px) for fast OCR
         let latestCoords = null;
         let simulatedMode = false;
         let simLat = 11.5564;
@@ -391,6 +377,54 @@
             updateModeBadge();
             fetchSingleLocation(false);
         };
+
+        function extractCleanJson(rawText) {
+            if (!rawText) throw new Error("Empty response from Gemini");
+            let cleaned = String(rawText).replace(/```json/gi, "").replace(/```/g, "").trim();
+            const firstBrace = cleaned.indexOf("{");
+            const lastBrace = cleaned.lastIndexOf("}");
+            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+                cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+            }
+            return JSON.parse(cleaned);
+        }
+
+        // ==========================================
+        // ON-DEVICE CAMBODIAN PHONE NUMBER EXTRACTOR
+        // ==========================================
+        function extractCambodianPhonesFromText(rawText) {
+            if (!rawText) return "";
+            // Match Cambodian numbers like 012 345 678, 098-765-432, +855 12 345 678, 023 999 888
+            const regex = /(?:\+855[\s.-]?|0)(?:1[0-9]|2[3-6]|3[1-9]|4[2-4]|5[2-5]|6[0-9]|7[0-9]|8[0-9]|9[0-9])(?:[\s.-]?\d){6,7}/g;
+            const matches = rawText.match(regex) || [];
+            const cleaned = [];
+            const seenDigits = new Set();
+
+            for (const m of matches) {
+                const digits = m.replace(/\D/g, "");
+                if (digits.length >= 8 && digits.length <= 12 && !seenDigits.has(digits)) {
+                    seenDigits.add(digits);
+                    cleaned.push(m.trim().replace(/\s+/g, " "));
+                }
+            }
+            return cleaned.join(" / ");
+        }
+
+        async function runOnDeviceOcrFallback(base64Image) {
+            if (typeof Tesseract === "undefined") {
+                throw new Error("On-device OCR library not loaded.");
+            }
+            document.getElementById('scan-status-title').textContent = "Running On-Device Phone OCR...";
+            const dataUrl = "data:image/jpeg;base64," + base64Image;
+            const result = await Tesseract.recognize(dataUrl, 'eng');
+            const text = result?.data?.text || "";
+            const phones = extractCambodianPhonesFromText(text);
+            return {
+                phones: phones,
+                propertyType: "",
+                summary: ""
+            };
+        }
 
         // ==========================================
         // RELATIVE DAY REMARK HELPER
@@ -943,8 +977,25 @@
         }
 
         // ==========================================
-        // 4. PHOTO CAPTURE & GEMINI AI SIGN OCR
+        // 4. HYBRID PHOTO CAPTURE (CLOUD AI + ON-DEVICE OCR)
         // ==========================================
+        function resizeImageToBase64(img, maxWidth, quality) {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxWidth) {
+                height *= maxWidth / width;
+                width = maxWidth;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            return canvas.toDataURL('image/jpeg', quality);
+        }
+
         function handlePhotoCapture(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -955,29 +1006,17 @@
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 1024;
-                    let width = img.width;
-                    let height = img.height;
+                    const hdDataUrl = resizeImageToBase64(img, 1024, 0.8);
+                    currentPhotoBase64 = hdDataUrl.split(',')[1];
 
-                    if (width > MAX_WIDTH) {
-                        height *= MAX_WIDTH / width;
-                        width = MAX_WIDTH;
-                    }
+                    const fastOcrDataUrl = resizeImageToBase64(img, 640, 0.75);
+                    currentFastOcrBase64 = fastOcrDataUrl.split(',')[1];
 
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                    currentPhotoBase64 = compressedDataUrl.split(',')[1];
-
-                    document.getElementById('photo-preview').src = compressedDataUrl;
+                    document.getElementById('photo-preview').src = hdDataUrl;
                     document.getElementById('camera-placeholder').classList.add('hidden');
                     document.getElementById('photo-preview-container').classList.remove('hidden');
 
-                    analyzeSignWithAI(currentPhotoBase64);
+                    analyzeSignWithAI(currentFastOcrBase64);
                 };
                 img.src = e.target.result;
             };
@@ -985,15 +1024,16 @@
         }
 
         function retryAiScan() {
-            if (currentPhotoBase64) {
-                analyzeSignWithAI(currentPhotoBase64);
+            if (currentFastOcrBase64 || currentPhotoBase64) {
+                analyzeSignWithAI(currentFastOcrBase64 || currentPhotoBase64);
             }
         }
 
-        function applyParsedSignData(parsed) {
+        function applyParsedSignData(parsed, elapsedSec, sourceLabel = "Cloud AI") {
             const aiBadge = document.getElementById('ai-badge');
             if (parsed.phones) {
                 document.getElementById('owner-phone').value = parsed.phones;
+                aiBadge.innerHTML = `<i class="fa-solid fa-bolt"></i> ${sourceLabel} (${elapsedSec}s)`;
                 aiBadge.classList.remove('hidden');
             }
             if (parsed.propertyType) {
@@ -1008,7 +1048,9 @@
             if (parsed.summary && !document.getElementById('agent-remark').value) {
                 document.getElementById('agent-remark').value = parsed.summary;
             }
-            showToast("AI extracted owner phone & sign details!", "success");
+            if (parsed.phones) {
+                showToast(`${sourceLabel} extracted phone number in ${elapsedSec}s!`, "success");
+            }
         }
 
         async function analyzeSignWithAI(base64Image) {
@@ -1016,24 +1058,31 @@
             const aiBadge = document.getElementById('ai-badge');
             const aiErrorBox = document.getElementById('ai-error-box');
             const aiErrorText = document.getElementById('ai-error-text');
+            const timerText = document.getElementById('scan-timer-text');
             
+            document.getElementById('scan-status-title').textContent = "Scanning Sign Phone Number...";
             overlay.classList.remove('hidden');
             aiBadge.classList.add('hidden');
             aiErrorBox.classList.add('hidden');
 
+            const startTime = performance.now();
+            const timerInterval = setInterval(() => {
+                const sec = ((performance.now() - startTime) / 1000).toFixed(1);
+                timerText.textContent = `${sec}s`;
+            }, 100);
+
+            let cloudError = "";
+
             try {
+                // 1. Try Direct Gemini API if user entered key in Settings
                 if (GEMINI_API_KEY) {
-                    const models = ["gemini-3.8-flash", "gemini-flash-latest", "gemini-2.5-pro"];
-                    const prompt = `You are an expert real estate OCR assistant in Cambodia. Examine this photo of a rental property sign.
-Extract:
-1. All owner phone numbers visible on the sign (format cleanly, separated by ' / ' if multiple).
-2. The likely property type (choose strictly one of: "Shophouse / Flat", "Villa", "Condo / Apartment", "Commercial / Office", "Warehouse / Land").
-3. A short summary of any price, size, or text written on the sign.
+                    const models = ["gemini-flash-latest", "gemini-2.5-flash-lite", "gemini-3.8-flash"];
+                    const prompt = `Extract from this rental sign:
+1. All phone numbers (separated by ' / ').
+2. Property type: one of "Shophouse / Flat", "Villa", "Condo / Apartment", "Commercial / Office", "Warehouse / Land".
+3. Brief price/size note.
+Return single JSON object only: {"phones":"","propertyType":"","summary":""}`;
 
-Respond ONLY with valid JSON in this exact format:
-{"phones": "012 345 678", "propertyType": "Shophouse / Flat", "summary": "For rent $800/month, 4m x 16m"}`;
-
-                    let lastErr = "Gemini request failed";
                     for (const modelName of models) {
                         const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
                         const response = await fetch(url, {
@@ -1046,7 +1095,11 @@ Respond ONLY with valid JSON in this exact format:
                                         { inlineData: { mimeType: "image/jpeg", data: base64Image } }
                                     ]
                                 }],
-                                generationConfig: { responseMimeType: "application/json" }
+                                generationConfig: {
+                                    responseMimeType: "application/json",
+                                    temperature: 0.1,
+                                    maxOutputTokens: 300
+                                }
                             })
                         });
 
@@ -1054,16 +1107,21 @@ Respond ONLY with valid JSON in this exact format:
                         if (response.ok && !result.error) {
                             const textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
                             if (textResponse) {
-                                applyParsedSignData(JSON.parse(textResponse));
-                                return;
+                                try {
+                                    const parsedObj = extractCleanJson(textResponse);
+                                    const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+                                    applyParsedSignData(parsedObj, elapsed, "Gemini AI");
+                                    return;
+                                } catch (parseErr) {
+                                    cloudError = `Parse error (${parseErr.message})`;
+                                    continue;
+                                }
                             }
                         }
-                        lastErr = result.error?.message || `Gemini API HTTP ${response.status}`;
+                        cloudError = result.error?.message || `Gemini API HTTP ${response.status}`;
                     }
-                    throw new Error(lastErr);
-                }
-
-                if (GAS_WEB_APP_URL) {
+                } else if (GAS_WEB_APP_URL) {
+                    // 2. Try Google Apps Script Gemini Relay
                     const response = await fetch(GAS_WEB_APP_URL, {
                         method: "POST",
                         headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -1071,27 +1129,42 @@ Respond ONLY with valid JSON in this exact format:
                     });
                     const res = await response.json();
                     if (res.status === "success" && res.data) {
-                        applyParsedSignData(res.data);
+                        const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+                        applyParsedSignData(res.data, elapsed, "Gemini AI");
                         return;
                     } else {
-                        throw new Error(res.message || "Unknown AI OCR error from Google Apps Script.");
+                        cloudError = res.message || "Cloud AI busy.";
                     }
                 }
 
-                throw new Error("No Google Sheet Web App URL or Gemini API Key configured in ⚙️ Settings.");
+                // 3. Automatic On-Device OCR Fallback (Works offline & when Google Gemini servers are busy!)
+                const localResult = await runOnDeviceOcrFallback(base64Image);
+                const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+
+                if (localResult.phones) {
+                    applyParsedSignData(localResult, elapsed, "Local OCR");
+                    if (cloudError) {
+                        aiErrorText.textContent = `Cloud AI was busy (${cloudError}), so On-Device OCR extracted the phone number automatically!`;
+                        aiErrorBox.classList.remove('hidden');
+                    }
+                } else {
+                    aiErrorText.textContent = (cloudError ? `Cloud AI busy (${cloudError}). ` : "") + "On-device OCR could not clearly read a phone number—please type it below or tap 'Re-Scan'.";
+                    aiErrorBox.classList.remove('hidden');
+                }
 
             } catch (err) {
-                console.warn("AI OCR error:", err);
-                aiErrorText.textContent = err.message + " (Tap 'Retry AI' on the photo or type the phone number manually below.)";
+                console.warn("OCR error:", err);
+                aiErrorText.textContent = err.message + " (Please type the phone number manually below.)";
                 aiErrorBox.classList.remove('hidden');
-                showToast("AI Scan Alert: " + err.message, "error");
             } finally {
+                clearInterval(timerInterval);
                 overlay.classList.add('hidden');
             }
         }
 
         function resetPhoto() {
             currentPhotoBase64 = null;
+            currentFastOcrBase64 = null;
             document.getElementById('sign-photo-input').value = "";
             document.getElementById('photo-preview').src = "";
             document.getElementById('photo-preview-container').classList.add('hidden');
