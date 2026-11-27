@@ -1060,20 +1060,32 @@
             const aiErrorText = document.getElementById('ai-error-text');
             const timerText = document.getElementById('scan-timer-text');
             
-            document.getElementById('scan-status-title').textContent = "Scanning Sign Phone Number...";
+            document.getElementById('scan-status-title').textContent = "Scanning Sign Phone Number (Max 20s)...";
             overlay.classList.remove('hidden');
             aiBadge.classList.add('hidden');
             aiErrorBox.classList.add('hidden');
 
+            const MAX_SCAN_MS = 20000; // 20-second strict limit
+            const abortController = new AbortController();
             const startTime = performance.now();
+
             const timerInterval = setInterval(() => {
                 const sec = ((performance.now() - startTime) / 1000).toFixed(1);
-                timerText.textContent = `${sec}s`;
+                timerText.textContent = `${sec}s / 20.0s`;
             }, 100);
 
-            let cloudError = "";
+            // Hard 20-second timeout promise that aborts active network requests
+            let timeoutId;
+            const timeoutPromise = new Promise((_, reject) => {
+                timeoutId = setTimeout(() => {
+                    abortController.abort();
+                    reject(new Error("SCAN_TIMEOUT_20S"));
+                }, MAX_SCAN_MS);
+            });
 
-            try {
+            const performScanWork = async () => {
+                let cloudError = "";
+
                 // 1. Try Direct Gemini API if user entered key in Settings
                 if (GEMINI_API_KEY) {
                     const models = ["gemini-flash-latest", "gemini-2.5-flash-lite", "gemini-3.8-flash"];
@@ -1084,9 +1096,11 @@
 Return single JSON object only: {"phones":"","propertyType":"","summary":""}`;
 
                     for (const modelName of models) {
+                        if (abortController.signal.aborted) return;
                         const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
                         const response = await fetch(url, {
                             method: 'POST',
+                            signal: abortController.signal,
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 contents: [{
@@ -1124,6 +1138,7 @@ Return single JSON object only: {"phones":"","propertyType":"","summary":""}`;
                     // 2. Try Google Apps Script Gemini Relay
                     const response = await fetch(GAS_WEB_APP_URL, {
                         method: "POST",
+                        signal: abortController.signal,
                         headers: { "Content-Type": "text/plain;charset=utf-8" },
                         body: JSON.stringify({ action: "analyzeSign", photoBase64: base64Image })
                     });
@@ -1137,8 +1152,12 @@ Return single JSON object only: {"phones":"","propertyType":"","summary":""}`;
                     }
                 }
 
-                // 3. Automatic On-Device OCR Fallback (Works offline & when Google Gemini servers are busy!)
+                if (abortController.signal.aborted) return;
+
+                // 3. Automatic On-Device OCR Fallback
                 const localResult = await runOnDeviceOcrFallback(base64Image);
+                if (abortController.signal.aborted) return;
+
                 const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
 
                 if (localResult.phones) {
@@ -1148,15 +1167,27 @@ Return single JSON object only: {"phones":"","propertyType":"","summary":""}`;
                         aiErrorBox.classList.remove('hidden');
                     }
                 } else {
-                    aiErrorText.textContent = (cloudError ? `Cloud AI busy (${cloudError}). ` : "") + "On-device OCR could not clearly read a phone number—please type it below or tap 'Re-Scan'.";
+                    aiErrorText.textContent = (cloudError ? `Cloud AI busy (${cloudError}). ` : "") + "Could not clearly read a phone number—please type it manually below.";
+                    aiErrorBox.classList.remove('hidden');
+                    document.getElementById('owner-phone').focus();
+                }
+            };
+
+            try {
+                await Promise.race([performScanWork(), timeoutPromise]);
+            } catch (err) {
+                if (err.message === "SCAN_TIMEOUT_20S" || err.name === "AbortError") {
+                    aiErrorText.textContent = "Phone scan stopped after 20 seconds. Please type the owner phone number manually below.";
+                    aiErrorBox.classList.remove('hidden');
+                    showToast("Scan timed out (20s). Please enter phone manually.", "info");
+                    setTimeout(() => document.getElementById('owner-phone').focus(), 100);
+                } else {
+                    console.warn("OCR error:", err);
+                    aiErrorText.textContent = err.message + " (Please type the phone number manually below.)";
                     aiErrorBox.classList.remove('hidden');
                 }
-
-            } catch (err) {
-                console.warn("OCR error:", err);
-                aiErrorText.textContent = err.message + " (Please type the phone number manually below.)";
-                aiErrorBox.classList.remove('hidden');
             } finally {
+                clearTimeout(timeoutId);
                 clearInterval(timerInterval);
                 overlay.classList.add('hidden');
             }
