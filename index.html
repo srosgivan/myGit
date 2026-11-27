@@ -42,7 +42,7 @@
                 <button onclick="toggleSettings()" class="text-slate-400 hover:text-slate-600 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <p class="text-xs text-slate-500 mb-4 leading-relaxed">
-                Paste your deployed <b>Google Apps Script Web App URL</b> below to sync logins, 5-sec GPS logs, route history maps, AI phone OCR, Google Drive photos, and Telegram alerts.
+                Paste your deployed <b>Google Apps Script Web App URL</b> below to sync logins, 30-sec GPS logs, route history maps, AI phone OCR, Google Drive photos, and Telegram alerts.
             </p>
             <div class="space-y-4">
                 <div>
@@ -153,12 +153,12 @@
         <!-- Main Scrollable Content -->
         <main class="flex-1 p-5 space-y-6 overflow-y-auto">
 
-            <!-- SECTION A: 5-Second Live GPS Tracking Card -->
+            <!-- SECTION A: 30-Second Live GPS Tracking Card -->
             <section class="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 shadow-sm">
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-2">
                         <span id="gps-indicator" class="w-3 h-3 rounded-full bg-slate-300"></span>
-                        <h3 class="font-bold text-sm text-slate-800">Live Field Tracking (5s)</h3>
+                        <h3 class="font-bold text-sm text-slate-800">Live Field Tracking (30s)</h3>
                     </div>
                     <span id="gps-ping-count" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700">
                         0 pings sent
@@ -179,7 +179,7 @@
                 <button id="tracking-toggle-btn" onclick="toggleTracking()" 
                     class="w-full py-3.5 px-4 rounded-xl font-bold text-sm text-white bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-2">
                     <i class="fa-solid fa-play"></i>
-                    <span>START 5-SEC GPS TRACKING</span>
+                    <span>START 30-SEC GPS TRACKING</span>
                 </button>
             </section>
 
@@ -255,9 +255,14 @@
                         <!-- Image Preview + AI Scanning Overlay -->
                         <div id="photo-preview-container" class="hidden relative">
                             <img id="photo-preview" src="" alt="Property Sign" class="w-full max-h-56 object-cover rounded-xl shadow-sm">
-                            <button type="button" onclick="resetPhoto()" class="absolute top-2 right-2 z-20 bg-slate-900/75 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose-600 transition">
-                                <i class="fa-solid fa-trash-can text-xs"></i>
-                            </button>
+                            <div class="absolute top-2 right-2 z-20 flex items-center gap-1.5">
+                                <button type="button" onclick="retryAiScan()" title="Re-scan photo with AI" class="bg-blue-600/90 text-white px-2.5 h-8 rounded-full flex items-center justify-center gap-1 text-xs font-semibold hover:bg-blue-700 transition shadow">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Retry AI
+                                </button>
+                                <button type="button" onclick="resetPhoto()" title="Remove photo" class="bg-slate-900/75 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose-600 transition shadow">
+                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                </button>
+                            </div>
                             
                             <!-- AI Loading Overlay -->
                             <div id="ai-scanning-overlay" class="hidden absolute inset-0 bg-slate-900/75 backdrop-blur-xs rounded-xl flex flex-col items-center justify-center text-white p-4">
@@ -268,23 +273,17 @@
                         </div>
                     </div>
 
+                    <!-- Visible AI Error / Diagnostic Alert Box -->
+                    <div id="ai-error-box" class="hidden bg-rose-50 border border-rose-200 text-rose-800 rounded-xl p-3 text-xs flex items-start gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-rose-600 mt-0.5"></i>
+                        <div class="flex-1">
+                            <span class="font-bold block">AI Phone Scan Notice:</span>
+                            <span id="ai-error-text" class="break-words"></span>
+                        </div>
+                    </div>
+
                     <!-- Agent Review & Input Form -->
                     <form id="property-form" onsubmit="submitPropertyData(event)" class="space-y-3.5">
-                        
-                        <!-- Property Code Preview -->
-                        <div>
-                            <label class="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1">
-                                <span>Property Code</span>
-                                <span class="text-[11px] text-slate-400">Auto-assigned on submit</span>
-                            </label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                                    <i class="fa-solid fa-hashtag"></i>
-                                </span>
-                                <input type="text" id="property-code-input" placeholder="Auto-generated (e.g. PROP-1001)"
-                                    class="w-full pl-9 pr-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono font-bold text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white">
-                            </div>
-                        </div>
 
                         <!-- AI Recognized Owner Phone Numbers -->
                         <div>
@@ -376,18 +375,16 @@
         let currentPhotoBase64 = null;
         let latestCoords = null;
         let simulatedMode = false;
-        let simLat = 11.5564; // Phnom Penh default base
+        let simLat = 11.5564;
         let simLng = 104.9282;
         let demoPropCounter = 1001;
 
-        // Map & Route History State
         let historyMap = null;
         let mapLayerGroup = null;
         let cachedTracks = [];
         let cachedProperties = [];
         let activeDayFilter = "ALL";
 
-        // Initialize UI on Load
         window.onload = () => {
             document.getElementById('gas-url-input').value = GAS_WEB_APP_URL;
             document.getElementById('gemini-key-input').value = GEMINI_API_KEY;
@@ -396,13 +393,11 @@
         };
 
         // ==========================================
-        // RELATIVE DAY REMARK HELPER ("Yesterday", "2 days ago", "Last week", etc.)
+        // RELATIVE DAY REMARK HELPER
         // ==========================================
         function getRelativeDayRemark(isoDateStr) {
             const date = new Date(isoDateStr);
             const now = new Date();
-            
-            // Compare calendar days at midnight local time
             const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const startOfTarget = new Date(date.getFullYear(), date.getMonth(), date.getDate());
             const diffDays = Math.round((startOfToday - startOfTarget) / (1000 * 60 * 60 * 24));
@@ -417,19 +412,18 @@
         }
 
         function getDayColor(remark) {
-            if (remark === "Today") return "#10b981";         // Emerald Green
-            if (remark === "Yesterday") return "#3b82f6";     // Blue
-            if (remark.includes("days ago")) return "#8b5cf6"; // Purple
-            if (remark.includes("week")) return "#f59e0b";    // Amber
-            return "#ec4899";                                 // Pink/Rose for Last month+
+            if (remark === "Today") return "#10b981";
+            if (remark === "Yesterday") return "#3b82f6";
+            if (remark.includes("days ago")) return "#8b5cf6";
+            if (remark.includes("week")) return "#f59e0b";
+            return "#ec4899";
         }
 
         // ==========================================
         // SETTINGS & TOAST HELPERS
         // ==========================================
         function toggleSettings() {
-            const modal = document.getElementById('settings-modal');
-            modal.classList.toggle('hidden');
+            document.getElementById('settings-modal').classList.toggle('hidden');
         }
 
         function saveSettings() {
@@ -574,22 +568,17 @@
 
             try {
                 if (!GAS_WEB_APP_URL) {
-                    // Generate realistic demo past routes in Phnom Penh for Yesterday, 2 days ago, Last week, Last month
                     const now = Date.now();
                     const dayMs = 24 * 60 * 60 * 1000;
                     cachedTracks = [
-                        // Yesterday route (along Monivong Blvd)
                         { timestamp: new Date(now - 1 * dayMs).toISOString(), lat: 11.5520, lng: 104.9210 },
                         { timestamp: new Date(now - 1 * dayMs + 60000).toISOString(), lat: 11.5555, lng: 104.9212 },
                         { timestamp: new Date(now - 1 * dayMs + 120000).toISOString(), lat: 11.5590, lng: 104.9215 },
-                        // 2 days ago route (BKK1 streets)
                         { timestamp: new Date(now - 2 * dayMs).toISOString(), lat: 11.5480, lng: 104.9240 },
                         { timestamp: new Date(now - 2 * dayMs + 60000).toISOString(), lat: 11.5485, lng: 104.9285 },
                         { timestamp: new Date(now - 2 * dayMs + 120000).toISOString(), lat: 11.5515, lng: 104.9290 },
-                        // Last week route (Toul Kork)
                         { timestamp: new Date(now - 8 * dayMs).toISOString(), lat: 11.5720, lng: 104.8980 },
                         { timestamp: new Date(now - 8 * dayMs + 60000).toISOString(), lat: 11.5750, lng: 104.9015 },
-                        // Last month route (Russian Blvd)
                         { timestamp: new Date(now - 32 * dayMs).toISOString(), lat: 11.5660, lng: 104.9080 },
                         { timestamp: new Date(now - 32 * dayMs + 60000).toISOString(), lat: 11.5665, lng: 104.9140 }
                     ];
@@ -613,8 +602,6 @@
                     if (res.status === "success") {
                         cachedTracks = res.tracks || [];
                         cachedProperties = res.properties || [];
-                        // Set next property code preview based on sheet count
-                        document.getElementById('property-code-input').placeholder = `Auto (e.g. PROP-${1001 + cachedProperties.length})`;
                     } else {
                         throw new Error(res.message || "Could not load route history.");
                     }
@@ -651,7 +638,6 @@
             const bounds = [];
             const groupedByDay = {};
 
-            // Group GPS tracks by relative day label ("Today", "Yesterday", "2 days ago", "Last week", "Last month")
             cachedTracks.forEach(pt => {
                 const remarkDay = getRelativeDayRemark(pt.timestamp);
                 if (activeDayFilter !== "ALL" && remarkDay !== activeDayFilter) return;
@@ -667,13 +653,11 @@
                 legendContainer.innerHTML = `<span class="text-slate-400">No recorded roads found for "${activeDayFilter}". Start GPS tracking to record your path!</span>`;
             }
 
-            // Draw road polylines and checkpoints for each day group
             dayKeys.forEach(remarkDay => {
                 const points = groupedByDay[remarkDay];
                 const color = getDayColor(remarkDay);
                 const latLngs = points.map(p => [p.lat, p.lng]);
 
-                // Draw road line
                 const polyline = L.polyline(latLngs, {
                     color: color,
                     weight: 5,
@@ -683,10 +667,7 @@
                 const firstDate = new Date(points[0].timestamp).toLocaleDateString();
                 polyline.bindPopup(`<b>Road Visited: ${remarkDay}</b><br><span style="font-size:11px;color:#64748b">${firstDate} (${points.length} GPS points)</span>`);
 
-                // Add start & end markers with day remark tooltip
-                const startPt = points[0];
                 const endPt = points[points.length - 1];
-
                 L.circleMarker([endPt.lat, endPt.lng], {
                     radius: 6,
                     fillColor: color,
@@ -699,19 +680,16 @@
 
                 latLngs.forEach(ll => bounds.push(ll));
 
-                // Add Legend Badge
                 const badge = document.createElement('span');
                 badge.className = "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 font-medium";
                 badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full" style="background:${color}"></span> ${remarkDay} (${points.length})`;
                 legendContainer.appendChild(badge);
             });
 
-            // Plot Captured Properties on Map with Property Code
             cachedProperties.forEach(prop => {
                 const remarkDay = getRelativeDayRemark(prop.timestamp);
                 if (activeDayFilter !== "ALL" && remarkDay !== activeDayFilter) return;
 
-                // Extract lat, lng from "11.5564, 104.9282 (...)"
                 const match = String(prop.location || "").match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
                 if (match) {
                     const lat = parseFloat(match[1]);
@@ -740,7 +718,6 @@
             if (!cachedProperties || cachedProperties.length === 0) return;
 
             logContainer.innerHTML = "";
-            // Show newest first
             [...cachedProperties].reverse().slice(0, 10).forEach(prop => {
                 const dayLabel = getRelativeDayRemark(prop.timestamp);
                 const item = document.createElement('div');
@@ -764,7 +741,7 @@
         }
 
         // ==========================================
-        // 3. 5-SECOND LIVE GPS TRACKING
+        // 3. 30-SECOND LIVE GPS TRACKING
         // ==========================================
         async function fetchIpFallbackLocation() {
             try {
@@ -845,13 +822,13 @@
                 
                 startGeoWatcher();
                 sendGpsPing();
-                trackingInterval = setInterval(sendGpsPing, 5000);
-                showToast("Live 5-second GPS tracking started!", "success");
+                trackingInterval = setInterval(sendGpsPing, 30000);
+                showToast("Live 30-second GPS tracking started!", "success");
             } else {
                 isTracking = false;
                 clearInterval(trackingInterval);
                 btn.className = "w-full py-3.5 px-4 rounded-xl font-bold text-sm text-white bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-2";
-                btn.innerHTML = `<i class="fa-solid fa-play"></i> <span>START 5-SEC GPS TRACKING</span>`;
+                btn.innerHTML = `<i class="fa-solid fa-play"></i> <span>START 30-SEC GPS TRACKING</span>`;
                 indicator.className = "w-3 h-3 rounded-full bg-slate-300";
                 showToast("GPS tracking stopped.", "info");
             }
@@ -907,7 +884,6 @@
             document.getElementById('gps-last-sync').textContent = nowStr;
             document.getElementById('gps-ping-count').textContent = `${pingCount} pings sent`;
 
-            // Immediately append to live map ("Today")
             cachedTracks.push({ timestamp: nowIso, lat: parseFloat(lat), lng: parseFloat(lng) });
             renderMapHistory();
 
@@ -1008,6 +984,12 @@
             reader.readAsDataURL(file);
         }
 
+        function retryAiScan() {
+            if (currentPhotoBase64) {
+                analyzeSignWithAI(currentPhotoBase64);
+            }
+        }
+
         function applyParsedSignData(parsed) {
             const aiBadge = document.getElementById('ai-badge');
             if (parsed.phones) {
@@ -1032,12 +1014,16 @@
         async function analyzeSignWithAI(base64Image) {
             const overlay = document.getElementById('ai-scanning-overlay');
             const aiBadge = document.getElementById('ai-badge');
+            const aiErrorBox = document.getElementById('ai-error-box');
+            const aiErrorText = document.getElementById('ai-error-text');
+            
             overlay.classList.remove('hidden');
             aiBadge.classList.add('hidden');
+            aiErrorBox.classList.add('hidden');
 
             try {
                 if (GEMINI_API_KEY) {
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+                    const models = ["gemini-3.8-flash", "gemini-flash-latest", "gemini-2.5-pro"];
                     const prompt = `You are an expert real estate OCR assistant in Cambodia. Examine this photo of a rental property sign.
 Extract:
 1. All owner phone numbers visible on the sign (format cleanly, separated by ' / ' if multiple).
@@ -1047,27 +1033,34 @@ Extract:
 Respond ONLY with valid JSON in this exact format:
 {"phones": "012 345 678", "propertyType": "Shophouse / Flat", "summary": "For rent $800/month, 4m x 16m"}`;
 
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{
-                                parts: [
-                                    { text: prompt },
-                                    { inlineData: { mimeType: "image/jpeg", data: base64Image } }
-                                ]
-                            }],
-                            generationConfig: { responseMimeType: "application/json" }
-                        })
-                    });
+                    let lastErr = "Gemini request failed";
+                    for (const modelName of models) {
+                        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{
+                                    parts: [
+                                        { text: prompt },
+                                        { inlineData: { mimeType: "image/jpeg", data: base64Image } }
+                                    ]
+                                }],
+                                generationConfig: { responseMimeType: "application/json" }
+                            })
+                        });
 
-                    if (!response.ok) throw new Error(`Gemini API HTTP ${response.status}`);
-                    const result = await response.json();
-                    const textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (textResponse) {
-                        applyParsedSignData(JSON.parse(textResponse));
-                        return;
+                        const result = await response.json();
+                        if (response.ok && !result.error) {
+                            const textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                            if (textResponse) {
+                                applyParsedSignData(JSON.parse(textResponse));
+                                return;
+                            }
+                        }
+                        lastErr = result.error?.message || `Gemini API HTTP ${response.status}`;
                     }
+                    throw new Error(lastErr);
                 }
 
                 if (GAS_WEB_APP_URL) {
@@ -1081,15 +1074,17 @@ Respond ONLY with valid JSON in this exact format:
                         applyParsedSignData(res.data);
                         return;
                     } else {
-                        throw new Error(res.message || "AI OCR failed in backend");
+                        throw new Error(res.message || "Unknown AI OCR error from Google Apps Script.");
                     }
                 }
 
-                showToast("Add Gemini API Key in ⚙️ or Code.gs to auto-read phone numbers.", "info");
+                throw new Error("No Google Sheet Web App URL or Gemini API Key configured in ⚙️ Settings.");
 
             } catch (err) {
                 console.warn("AI OCR error:", err);
-                showToast("Could not auto-read sign (" + err.message + "). Enter phone manually.", "info");
+                aiErrorText.textContent = err.message + " (Tap 'Retry AI' on the photo or type the phone number manually below.)";
+                aiErrorBox.classList.remove('hidden');
+                showToast("AI Scan Alert: " + err.message, "error");
             } finally {
                 overlay.classList.add('hidden');
             }
@@ -1102,6 +1097,7 @@ Respond ONLY with valid JSON in this exact format:
             document.getElementById('photo-preview-container').classList.add('hidden');
             document.getElementById('camera-placeholder').classList.remove('hidden');
             document.getElementById('ai-badge').classList.add('hidden');
+            document.getElementById('ai-error-box').classList.add('hidden');
         }
 
         // ==========================================
@@ -1109,7 +1105,6 @@ Respond ONLY with valid JSON in this exact format:
         // ==========================================
         async function submitPropertyData(e) {
             e.preventDefault();
-            const customPropCode = document.getElementById('property-code-input').value.trim();
             const ownerPhone = document.getElementById('owner-phone').value.trim();
             const location = document.getElementById('property-location').value.trim();
             const propertyType = document.getElementById('property-type').value;
@@ -1126,7 +1121,6 @@ Respond ONLY with valid JSON in this exact format:
 
             const payload = {
                 action: "submitProperty",
-                propertyCode: customPropCode,
                 agentId: currentAgent.agentId,
                 agentName: currentAgent.fullName || currentAgent.username,
                 ownerPhone,
@@ -1137,7 +1131,7 @@ Respond ONLY with valid JSON in this exact format:
             };
 
             try {
-                let finalPropertyCode = customPropCode || `PROP-${demoPropCounter++}`;
+                let finalPropertyCode = `PROP-${demoPropCounter++}`;
                 if (!GAS_WEB_APP_URL) {
                     await new Promise(r => setTimeout(r, 800));
                     showToast(`Demo Submitted (${finalPropertyCode})!`, "success");
@@ -1155,7 +1149,6 @@ Respond ONLY with valid JSON in this exact format:
                     showToast(`Saved ${finalPropertyCode} to Sheet, Drive & Telegram!`, "success");
                 }
 
-                // Add to local cache & update map + list immediately
                 cachedProperties.push({
                     propertyCode: finalPropertyCode,
                     timestamp: new Date().toISOString(),
@@ -1167,7 +1160,6 @@ Respond ONLY with valid JSON in this exact format:
                 renderMapHistory();
                 renderSavedPropertiesList();
 
-                document.getElementById('property-code-input').value = "";
                 document.getElementById('owner-phone').value = "";
                 document.getElementById('agent-remark').value = "";
                 resetPhoto();
