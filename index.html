@@ -13,7 +13,7 @@
     <!-- On-Device Instant OCR Fallback (Tesseract.js) -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; overscroll-behavior-y: contain; }
         .pulse-ring {
             box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
             animation: pulse-green 2s infinite;
@@ -381,6 +381,21 @@
             document.getElementById('gas-url-input').value = GAS_WEB_APP_URL;
             document.getElementById('gemini-key-input').value = GEMINI_API_KEY;
             checkServerConfig();
+
+            // Restore persistent agent session across page refreshes / pull-to-refresh
+            const savedAgentRaw = localStorage.getItem('goocambodia_logged_in_agent');
+            if (savedAgentRaw) {
+                try {
+                    const savedAgent = JSON.parse(savedAgentRaw);
+                    if (savedAgent && savedAgent.agentId) {
+                        loginSuccess(savedAgent, true);
+                        return;
+                    }
+                } catch (e) {
+                    localStorage.removeItem('goocambodia_logged_in_agent');
+                }
+            }
+
             fetchSingleLocation(false);
         };
 
@@ -554,14 +569,10 @@
                 }
             } catch (err) {
                 showToast(err.message, "error");
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<span>Sign In</span> <i class="fa-solid fa-arrow-right"></i>`;
-            }
-        }
-
-        function loginSuccess(agent) {
+        function loginSuccess(agent, isRestoredSession = false) {
             currentAgent = agent;
+            localStorage.setItem('goocambodia_logged_in_agent', JSON.stringify(agent));
+
             document.getElementById('agent-name-display').textContent = agent.fullName || agent.username;
             document.getElementById('agent-id-display').textContent = `ID: ${agent.agentId}`;
 
@@ -572,7 +583,10 @@
             loadAgentHistory(false);
             startAutoTracking();
             fetchSingleLocation(false);
-            showToast(`Welcome, ${agent.fullName || agent.username}! Live 30s tracking active.`, "success");
+
+            if (!isRestoredSession) {
+                showToast(`Welcome, ${agent.fullName || agent.username}! Live 30s tracking active.`, "success");
+            }
         }
 
         function logout() {
@@ -581,6 +595,7 @@
                 navigator.geolocation.clearWatch(geoWatchId);
                 geoWatchId = null;
             }
+            localStorage.removeItem('goocambodia_logged_in_agent');
             currentAgent = null;
             cachedTracks = [];
             cachedProperties = [];
