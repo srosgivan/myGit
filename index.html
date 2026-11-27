@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Goo Cambodia Agent App</title>
+    <meta name="theme-color" content="#1D9BF0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Goo Cambodia">
+    <link id="dynamic-manifest" rel="manifest" href="">
+    <link id="apple-touch-icon" rel="apple-touch-icon" href="">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -125,9 +131,42 @@
                 </button>
             </form>
 
-            <p class="text-center text-[11px] text-slate-400 mt-6">
+            <!-- Install App on Phone Button -->
+            <div id="install-app-wrapper" class="mt-4 pt-4 border-t border-slate-100">
+                <button type="button" id="install-app-btn" onclick="triggerInstallApp()"
+                    class="w-full bg-slate-900 hover:bg-slate-800 active:scale-[0.99] text-white font-semibold py-3 px-4 rounded-xl shadow-sm transition flex items-center justify-center gap-2 text-sm">
+                    <i class="fa-solid fa-mobile-screen-button text-[#1D9BF0] text-base"></i>
+                    <span>Install App on Phone</span>
+                </button>
+            </div>
+
+            <p class="text-center text-[11px] text-slate-400 mt-5">
                 &copy; Goo Cambodia Real Estate • Authorized Field Agents Only
             </p>
+        </div>
+    </div>
+
+    <!-- iOS / Manual Install Guide Modal -->
+    <div id="ios-install-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 text-center">
+            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-sky-100 text-[#1D9BF0] flex items-center justify-center">
+                <i class="fa-solid fa-mobile-screen-button text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-1">Install Goo Cambodia App</h3>
+            <p class="text-xs text-slate-500 mb-4">Add this app to your phone's Home Screen for full-screen access:</p>
+            <div class="bg-slate-50 rounded-xl p-3.5 text-left text-xs text-slate-700 space-y-2.5 border border-slate-200/80 mb-5">
+                <div class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-[#1D9BF0] text-white font-bold flex items-center justify-center shrink-0 text-[11px]">1</span>
+                    <span><b>iPhone (Safari):</b> Tap the <b>Share</b> icon <i class="fa-solid fa-arrow-up-from-bracket text-[#1D9BF0]"></i> at the bottom, then tap <b>"Add to Home Screen"</b>.</span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-[#1D9BF0] text-white font-bold flex items-center justify-center shrink-0 text-[11px]">2</span>
+                    <span><b>Android (Chrome):</b> Tap the <b>Menu (⋮)</b> icon at the top-right, then tap <b>"Install app"</b> or <b>"Add to Home screen"</b>.</span>
+                </div>
+            </div>
+            <button type="button" onclick="closeIosInstallModal()" class="w-full bg-[#1D9BF0] hover:bg-sky-600 text-white font-semibold py-2.5 rounded-xl text-sm transition">
+                Got It
+            </button>
         </div>
     </div>
 
@@ -376,8 +415,71 @@
         let cachedTracks = [];
         let cachedProperties = [];
         let activeDayFilter = "ALL";
+        let deferredInstallPrompt = null;
+
+        // ==========================================
+        // PWA MANIFEST & HOME SCREEN ICON GENERATOR
+        // ==========================================
+        function setupPwaInstall() {
+            const logoSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="512" height="512"><rect width="200" height="200" rx="40" fill="#1D9BF0"/><path d="M100 28C63.5 28 36 55.2 36 90.5C36 123.4 69.8 153.6 95.8 175.4C98.2 177.4 101.8 177.4 104.2 175.4C130.2 153.6 164 123.4 164 90.5H100V111H140.5C134.8 128.4 117.6 144.6 100 159.4C77.6 140.4 57 116.5 57 90.5C57 66.5 75.8 48.5 100 48.5C116.8 48.5 131.5 57.2 138.4 70.5H160.8C152.6 45.4 128.8 28 100 28Z" fill="#FFFFFF"/><path d="M100 66C85.6 66 74 77.6 74 92C74 105.2 86.2 117.6 97.6 127.2C99 128.4 101 128.4 102.4 127.2C113.8 117.6 126 105.2 126 92C126 77.6 114.4 66 100 66Z" fill="#FFFFFF"/></svg>`;
+            const iconDataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(logoSvg);
+
+            const appleIcon = document.getElementById('apple-touch-icon');
+            if (appleIcon) appleIcon.href = iconDataUrl;
+
+            const manifest = {
+                name: "Goo Cambodia Agent App",
+                short_name: "Goo Cambodia",
+                start_url: window.location.href,
+                display: "standalone",
+                background_color: "#0f172a",
+                theme_color: "#1D9BF0",
+                icons: [
+                    { src: iconDataUrl, sizes: "192x192", type: "image/svg+xml", purpose: "any maskable" },
+                    { src: iconDataUrl, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
+                ]
+            };
+            const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+            const manifestEl = document.getElementById('dynamic-manifest');
+            if (manifestEl) manifestEl.href = URL.createObjectURL(manifestBlob);
+
+            // Hide install button if already running inside the installed standalone app
+            if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+                const wrapper = document.getElementById('install-app-wrapper');
+                if (wrapper) wrapper.classList.add('hidden');
+            }
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+        });
+
+        window.addEventListener('appinstalled', () => {
+            deferredInstallPrompt = null;
+            const wrapper = document.getElementById('install-app-wrapper');
+            if (wrapper) wrapper.classList.add('hidden');
+            showToast("Goo Cambodia App installed on your phone!", "success");
+        });
+
+        async function triggerInstallApp() {
+            if (deferredInstallPrompt) {
+                deferredInstallPrompt.prompt();
+                const { outcome } = await deferredInstallPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    deferredInstallPrompt = null;
+                }
+            } else {
+                document.getElementById('ios-install-modal').classList.remove('hidden');
+            }
+        }
+
+        function closeIosInstallModal() {
+            document.getElementById('ios-install-modal').classList.add('hidden');
+        }
 
         window.onload = () => {
+            setupPwaInstall();
             document.getElementById('gas-url-input').value = GAS_WEB_APP_URL;
             document.getElementById('gemini-key-input').value = GEMINI_API_KEY;
             checkServerConfig();
