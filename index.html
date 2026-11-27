@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PropTrack AI - Real Estate Field Agent App</title>
+    <title>Goo Cambodia Agent App</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Leaflet Map CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -26,39 +26,39 @@
         #history-map { height: 280px; width: 100%; z-index: 1; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
     <!-- Toast Notification Banner -->
     <div id="toast-container" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-11/12 max-w-md pointer-events-none transition-all duration-300 opacity-0 -translate-y-4">
         <div id="toast-box" class="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 border border-slate-700">
-            <i id="toast-icon" class="fa-solid fa-circle-info text-blue-400"></i>
+            <i id="toast-icon" class="fa-solid fa-circle-info text-sky-400"></i>
             <p id="toast-msg" class="text-sm font-medium"></p>
         </div>
     </div>
 
-    <!-- Settings Modal (Google Apps Script URL & Optional Gemini Key) -->
+    <!-- Settings Modal (Override Google Apps Script URL if needed) -->
     <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-gear text-blue-600 mr-2"></i>Backend Configuration</h3>
+                <h3 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-gear text-[#1D9BF0] mr-2"></i>Backend Configuration</h3>
                 <button onclick="toggleSettings()" class="text-slate-400 hover:text-slate-600 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <p class="text-xs text-slate-500 mb-4 leading-relaxed">
-                Paste your deployed <b>Google Apps Script Web App URL</b> below. <i>Tip: Adding your Gemini API Key here makes cloud AI OCR 3x faster (~1 sec), with automatic on-device OCR backup!</i>
+                Configure your deployed <b>Google Apps Script Web App URL</b>. You can also set this permanently inside <code>index.html</code> under <code>APP_CONFIG</code>.
             </p>
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Apps Script Web App URL</label>
                     <input type="url" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec" 
-                        class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9BF0]">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Gemini API Key (Optional Direct Mode)</label>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Gemini API Key (Optional Direct Speed Boost)</label>
                     <input type="password" id="gemini-key-input" placeholder="AIzaSy..." 
-                        class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9BF0]">
                 </div>
                 <div class="flex gap-2 pt-2">
-                    <button onclick="saveSettings()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl text-sm transition">
+                    <button onclick="saveSettings()" class="flex-1 bg-[#1D9BF0] hover:bg-sky-600 text-white font-semibold py-2.5 rounded-xl text-sm transition">
                         Save Configuration
                     </button>
                 </div>
@@ -70,23 +70,30 @@
     <!-- 1. LOGIN SCREEN                            -->
     <!-- ========================================== -->
     <div id="login-screen" class="flex-1 flex flex-col justify-center items-center p-4">
-        <div class="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-100 p-8 relative">
-            <button onclick="toggleSettings()" title="Configure Google Sheet Backend" class="absolute top-5 right-5 text-slate-400 hover:text-blue-600 p-2 rounded-full hover:bg-slate-100 transition">
+        <div class="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-200/80 p-8 relative">
+            <button onclick="toggleSettings()" title="Backend Configuration" class="absolute top-5 right-5 text-slate-400 hover:text-[#1D9BF0] p-2 rounded-full hover:bg-slate-100 transition">
                 <i class="fa-solid fa-gear text-lg"></i>
             </button>
 
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-600/30">
-                    <i class="fa-solid fa-building-user text-2xl"></i>
+            <div class="text-center mb-7">
+                <!-- Goo Cambodia Official Brand Logo -->
+                <div class="w-24 h-24 mx-auto mb-3 rounded-full shadow-lg shadow-sky-500/25 overflow-hidden bg-[#1D9BF0] flex items-center justify-center">
+                    <svg viewBox="0 0 200 200" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="100" cy="100" r="100" fill="#1D9BF0"/>
+                        <!-- White Pin-G Symbol matching Goo Cambodia Logo -->
+                        <path d="M100 28C63.5 28 36 55.2 36 90.5C36 123.4 69.8 153.6 95.8 175.4C98.2 177.4 101.8 177.4 104.2 175.4C130.2 153.6 164 123.4 164 90.5H100V111H140.5C134.8 128.4 117.6 144.6 100 159.4C77.6 140.4 57 116.5 57 90.5C57 66.5 75.8 48.5 100 48.5C116.8 48.5 131.5 57.2 138.4 70.5H160.8C152.6 45.4 128.8 28 100 28Z" fill="#FFFFFF"/>
+                        <path d="M100 66C85.6 66 74 77.6 74 92C74 105.2 86.2 117.6 97.6 127.2C99 128.4 101 128.4 102.4 127.2C113.8 117.6 126 105.2 126 92C126 77.6 114.4 66 100 66Z" fill="#FFFFFF"/>
+                    </svg>
                 </div>
-                <h1 class="text-2xl font-bold text-slate-900">PropTrack Field AI</h1>
-                <p class="text-sm text-slate-500 mt-1">Real Estate Agent Portal & Sign Scanner</p>
+                <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Goo Cambodia Agent App</h1>
+                <p class="text-sm text-slate-500 mt-1">Field Tracking & Property Sign Scanner</p>
             </div>
 
-            <div class="mb-6 flex justify-center">
-                <span id="mode-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                    <span class="w-2 h-2 rounded-full bg-amber-500"></span> Demo Mode (No Sheet URL)
-                </span>
+            <div id="connection-warning" class="hidden mb-5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
+                <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+                <div>
+                    <b>Server URL Missing:</b> Please set <code>GAS_WEB_APP_URL</code> in <code>index.html</code> or click the <b>⚙️</b> icon above to connect your Google Sheet.
+                </div>
             </div>
 
             <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
@@ -96,8 +103,8 @@
                         <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
                             <i class="fa-solid fa-user"></i>
                         </span>
-                        <input type="text" id="username" required placeholder="e.g. sokha" value="sokha"
-                            class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
+                        <input type="text" id="username" required autocomplete="username" placeholder="Enter your username"
+                            class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9BF0] focus:bg-white transition">
                     </div>
                 </div>
 
@@ -107,19 +114,19 @@
                         <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
                             <i class="fa-solid fa-lock"></i>
                         </span>
-                        <input type="password" id="password" required placeholder="••••••••" value="1234"
-                            class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
+                        <input type="password" id="password" required autocomplete="current-password" placeholder="Enter your password"
+                            class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9BF0] focus:bg-white transition">
                     </div>
                 </div>
 
-                <button type="submit" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-semibold py-3.5 rounded-xl shadow-lg shadow-blue-600/20 transition flex items-center justify-center gap-2 mt-2">
-                    <span>Sign In to Dashboard</span>
+                <button type="submit" id="login-btn" class="w-full bg-[#1D9BF0] hover:bg-sky-600 active:scale-[0.99] text-white font-bold py-3.5 rounded-xl shadow-lg shadow-sky-500/25 transition flex items-center justify-center gap-2 mt-2">
+                    <span>Sign In</span>
                     <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </form>
 
-            <p class="text-center text-xs text-slate-400 mt-6">
-                Demo credentials pre-filled: <b class="text-slate-600">sokha</b> / <b class="text-slate-600">1234</b>
+            <p class="text-center text-[11px] text-slate-400 mt-6">
+                &copy; Goo Cambodia Real Estate • Authorized Field Agents Only
             </p>
         </div>
     </div>
@@ -127,19 +134,25 @@
     <!-- ========================================== -->
     <!-- 2. MAIN AGENT DASHBOARD                    -->
     <!-- ========================================== -->
-    <div id="dashboard-screen" class="hidden flex-1 flex flex-col max-w-lg mx-auto w-full bg-white sm:my-4 sm:rounded-3xl sm:shadow-xl sm:border border-slate-100 overflow-hidden">
+    <div id="dashboard-screen" class="hidden flex-1 flex flex-col max-w-lg mx-auto w-full bg-white sm:my-4 sm:rounded-3xl sm:shadow-xl sm:border border-slate-200/80 overflow-hidden">
         
-        <header class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between">
+        <header class="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold text-sm" id="agent-avatar">
-                    AG
+                <!-- Header Brand Logo -->
+                <div class="w-10 h-10 rounded-full bg-[#1D9BF0] flex items-center justify-center shrink-0 shadow">
+                    <svg viewBox="0 0 200 200" class="w-9 h-9" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="100" cy="100" r="100" fill="#1D9BF0"/>
+                        <path d="M100 28C63.5 28 36 55.2 36 90.5C36 123.4 69.8 153.6 95.8 175.4C98.2 177.4 101.8 177.4 104.2 175.4C130.2 153.6 164 123.4 164 90.5H100V111H140.5C134.8 128.4 117.6 144.6 100 159.4C77.6 140.4 57 116.5 57 90.5C57 66.5 75.8 48.5 100 48.5C116.8 48.5 131.5 57.2 138.4 70.5H160.8C152.6 45.4 128.8 28 100 28Z" fill="#FFFFFF"/>
+                        <path d="M100 66C85.6 66 74 77.6 74 92C74 105.2 86.2 117.6 97.6 127.2C99 128.4 101 128.4 102.4 127.2C113.8 117.6 126 105.2 126 92C126 77.6 114.4 66 100 66Z" fill="#FFFFFF"/>
+                    </svg>
                 </div>
                 <div>
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-[#1D9BF0]">Goo Cambodia Agent</div>
                     <h2 class="font-bold text-sm leading-tight" id="agent-name-display">Agent Name</h2>
-                    <p class="text-xs text-slate-400" id="agent-id-display">ID: AGT-001</p>
+                    <p class="text-[11px] text-slate-400" id="agent-id-display">ID: AGT-001</p>
                 </div>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5">
                 <button onclick="toggleSettings()" class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition" title="Settings">
                     <i class="fa-solid fa-gear"></i>
                 </button>
@@ -183,18 +196,18 @@
 
             <!-- SECTION B: Agent Past Roads & Route History Map -->
             <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div class="bg-indigo-50/80 px-4 py-3 border-b border-indigo-100 flex items-center justify-between">
-                    <h3 class="font-bold text-sm text-indigo-950 flex items-center gap-2">
-                        <i class="fa-solid fa-route text-indigo-600"></i> My Past Roads & Map History
+                <div class="bg-sky-50/80 px-4 py-3 border-b border-sky-100 flex items-center justify-between">
+                    <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-route text-[#1D9BF0]"></i> My Past Roads & Map History
                     </h3>
-                    <button type="button" onclick="loadAgentHistory(true)" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                    <button type="button" onclick="loadAgentHistory(true)" class="text-xs font-semibold text-[#1D9BF0] hover:text-sky-700 flex items-center gap-1">
                         <i id="refresh-map-icon" class="fa-solid fa-arrows-rotate"></i> Sync Map
                     </button>
                 </div>
 
                 <div class="p-3 space-y-3">
                     <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs" id="day-filter-bar">
-                        <button type="button" onclick="filterMapByDay('ALL')" class="day-filter-btn active px-2.5 py-1 rounded-full font-semibold bg-indigo-600 text-white whitespace-nowrap">
+                        <button type="button" onclick="filterMapByDay('ALL')" class="day-filter-btn active px-2.5 py-1 rounded-full font-semibold bg-[#1D9BF0] text-white whitespace-nowrap">
                             All Days
                         </button>
                         <button type="button" onclick="filterMapByDay('Today')" class="day-filter-btn px-2.5 py-1 rounded-full font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap">
@@ -226,30 +239,30 @@
 
             <!-- SECTION C: Hybrid AI + On-Device Rental Sign Scanner -->
             <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div class="bg-blue-50/70 px-4 py-3 border-b border-blue-100 flex items-center justify-between">
-                    <h3 class="font-bold text-sm text-blue-950 flex items-center gap-2">
-                        <i class="fa-solid fa-camera text-blue-600"></i> Capture Rental Property Sign
+                <div class="bg-sky-50/70 px-4 py-3 border-b border-sky-100 flex items-center justify-between">
+                    <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-camera text-[#1D9BF0]"></i> Capture Rental Property Sign
                     </h3>
-                    <span class="text-[11px] font-semibold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-md"><i class="fa-solid fa-bolt"></i> Hybrid AI + Local OCR</span>
+                    <span class="text-[11px] font-semibold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-md"><i class="fa-solid fa-bolt"></i> Auto OCR</span>
                 </div>
 
                 <div class="p-4 space-y-4">
-                    <div id="camera-dropzone" class="relative border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:border-blue-500 transition bg-slate-50/50">
+                    <div id="camera-dropzone" class="relative border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:border-[#1D9BF0] transition bg-slate-50/50">
                         <input type="file" id="sign-photo-input" accept="image/*" capture="environment" onchange="handlePhotoCapture(event)" 
                             class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                         
                         <div id="camera-placeholder" class="space-y-2">
-                            <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto">
+                            <div class="w-12 h-12 rounded-full bg-sky-100 text-[#1D9BF0] flex items-center justify-center mx-auto">
                                 <i class="fa-solid fa-camera-retro text-xl"></i>
                             </div>
                             <p class="text-sm font-semibold text-slate-700">Tap to Take Photo of Rental Sign</p>
-                            <p class="text-xs text-slate-400">Extracts phone numbers automatically & assigns Property Code</p>
+                            <p class="text-xs text-slate-400">Extracts owner phone numbers & auto-assigns Property Code</p>
                         </div>
 
                         <div id="photo-preview-container" class="hidden relative">
                             <img id="photo-preview" src="" alt="Property Sign" class="w-full max-h-56 object-cover rounded-xl shadow-sm">
                             <div class="absolute top-2 right-2 z-20 flex items-center gap-1.5">
-                                <button type="button" onclick="retryAiScan()" title="Re-scan photo" class="bg-blue-600/90 text-white px-2.5 h-8 rounded-full flex items-center justify-center gap-1 text-xs font-semibold hover:bg-blue-700 transition shadow">
+                                <button type="button" onclick="retryAiScan()" title="Re-scan photo" class="bg-[#1D9BF0] text-white px-2.5 h-8 rounded-full flex items-center justify-center gap-1 text-xs font-semibold hover:bg-sky-600 transition shadow">
                                     <i class="fa-solid fa-wand-magic-sparkles"></i> Re-Scan
                                 </button>
                                 <button type="button" onclick="resetPhoto()" title="Remove photo" class="bg-slate-900/75 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose-600 transition shadow">
@@ -260,7 +273,7 @@
                             <div id="ai-scanning-overlay" class="hidden absolute inset-0 bg-slate-900/75 backdrop-blur-xs rounded-xl flex flex-col items-center justify-center text-white p-4">
                                 <i class="fa-solid fa-bolt fa-bounce text-2xl text-amber-400 mb-2"></i>
                                 <p id="scan-status-title" class="text-sm font-bold">Scanning Sign Phone Number...</p>
-                                <p id="scan-timer-text" class="text-xs text-slate-300 mt-1">0.0s</p>
+                                <p id="scan-timer-text" class="text-xs text-slate-300 mt-1">0.0s / 20.0s</p>
                             </div>
                         </div>
                     </div>
@@ -285,30 +298,25 @@
                                     <i class="fa-solid fa-phone"></i>
                                 </span>
                                 <input type="text" id="owner-phone" required placeholder="e.g. 012 345 678 / 098 765 432"
-                                    class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white">
+                                    class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#1D9BF0] focus:bg-white">
                             </div>
                         </div>
 
                         <div>
                             <label class="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1">
                                 <span>Real Location (GPS & Map Link) <span class="text-rose-500">*</span></span>
-                                <div class="flex items-center gap-2">
-                                    <button type="button" onclick="useSimulatedGps()" class="text-[11px] text-amber-600 hover:underline font-medium" title="Use test coordinates if GPS is blocked in preview">
-                                        <i class="fa-solid fa-flask"></i> Test GPS
-                                    </button>
-                                    <button type="button" onclick="fetchSingleLocation(true)" class="text-[11px] text-blue-600 hover:underline font-medium">
-                                        <i class="fa-solid fa-location-crosshairs"></i> Refresh GPS
-                                    </button>
-                                </div>
+                                <button type="button" onclick="fetchSingleLocation(true)" class="text-[11px] text-[#1D9BF0] hover:underline font-medium">
+                                    <i class="fa-solid fa-location-crosshairs"></i> Refresh GPS
+                                </button>
                             </label>
                             <input type="text" id="property-location" required placeholder="Fetching current GPS coordinates..."
-                                class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white">
+                                class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1D9BF0] focus:bg-white">
                             <p id="gps-helper-text" class="hidden text-[11px] text-amber-600 mt-1"></p>
                         </div>
 
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Property Type <span class="text-rose-500">*</span></label>
-                            <select id="property-type" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white">
+                            <select id="property-type" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9BF0] focus:bg-white">
                                 <option value="Shophouse / Flat">Shophouse / Flat (ផ្ទះល្វែង)</option>
                                 <option value="Villa">Villa (វីឡា)</option>
                                 <option value="Condo / Apartment">Condo / Apartment (ខុនដូ)</option>
@@ -320,11 +328,11 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Agent Review & Remark</label>
                             <textarea id="agent-remark" rows="2" placeholder="Price on sign, condition, street width, or notes..."
-                                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"></textarea>
+                                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9BF0] focus:bg-white"></textarea>
                         </div>
 
                         <button type="submit" id="submit-property-btn" 
-                            class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-blue-600/20 transition flex items-center justify-center gap-2">
+                            class="w-full bg-[#1D9BF0] hover:bg-sky-600 active:scale-[0.99] text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-sky-500/25 transition flex items-center justify-center gap-2">
                             <i class="fa-solid fa-paper-plane"></i>
                             <span>Submit to Sheet, Drive & Telegram</span>
                         </button>
@@ -346,11 +354,18 @@
     </div>
 
     <script>
-        // ==========================================
-        // STATE & CONFIGURATION
-        // ==========================================
-        let GAS_WEB_APP_URL = localStorage.getItem('proptrack_gas_url') || "";
-        let GEMINI_API_KEY = localStorage.getItem('proptrack_gemini_key') || "";
+        // =========================================================================
+        // PRODUCTION CONFIGURATION (PASTE YOUR DEPLOYED APPS SCRIPT WEB APP URL HERE)
+        // =========================================================================
+        const APP_CONFIG = {
+            GAS_WEB_APP_URL: "https://script.google.com/macros/s/AKfycbzlKL5Ymw-VVdGu8-NHOIcW4PRAA5OSNjyzDnDflHG6sEZ2pCCTYDcCO1-YNePYvgHk/exec",
+            GEMINI_API_KEY: "" // Optional: leave blank to use the key inside Code.gs
+        };
+
+        // Load configured URL (uses APP_CONFIG first, or localStorage override if edited in ⚙️)
+        let GAS_WEB_APP_URL = localStorage.getItem('goocambodia_gas_url') || 
+            (APP_CONFIG.GAS_WEB_APP_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE" ? APP_CONFIG.GAS_WEB_APP_URL : "");
+        let GEMINI_API_KEY = localStorage.getItem('goocambodia_gemini_key') || APP_CONFIG.GEMINI_API_KEY || "";
         
         let currentAgent = null;
         let isTracking = false;
@@ -358,12 +373,9 @@
         let geoWatchId = null;
         let pingCount = 0;
         let currentPhotoBase64 = null;      // Full HD (1024px) for Google Drive upload
-        let currentFastOcrBase64 = null;    // Lightweight (512px) for fast OCR
+        let currentFastOcrBase64 = null;    // Lightweight (640px) for fast OCR
         let latestCoords = null;
-        let simulatedMode = false;
-        let simLat = 11.5564;
-        let simLng = 104.9282;
-        let demoPropCounter = 1001;
+        let approxLocationMode = false;
 
         let historyMap = null;
         let mapLayerGroup = null;
@@ -374,9 +386,18 @@
         window.onload = () => {
             document.getElementById('gas-url-input').value = GAS_WEB_APP_URL;
             document.getElementById('gemini-key-input').value = GEMINI_API_KEY;
-            updateModeBadge();
+            checkServerConfig();
             fetchSingleLocation(false);
         };
+
+        function checkServerConfig() {
+            const warn = document.getElementById('connection-warning');
+            if (!GAS_WEB_APP_URL) {
+                warn.classList.remove('hidden');
+            } else {
+                warn.classList.add('hidden');
+            }
+        }
 
         function extractCleanJson(rawText) {
             if (!rawText) throw new Error("Empty response from Gemini");
@@ -394,7 +415,6 @@
         // ==========================================
         function extractCambodianPhonesFromText(rawText) {
             if (!rawText) return "";
-            // Match Cambodian numbers like 012 345 678, 098-765-432, +855 12 345 678, 023 999 888
             const regex = /(?:\+855[\s.-]?|0)(?:1[0-9]|2[3-6]|3[1-9]|4[2-4]|5[2-5]|6[0-9]|7[0-9]|8[0-9]|9[0-9])(?:[\s.-]?\d){6,7}/g;
             const matches = rawText.match(regex) || [];
             const cleaned = [];
@@ -447,7 +467,7 @@
 
         function getDayColor(remark) {
             if (remark === "Today") return "#10b981";
-            if (remark === "Yesterday") return "#3b82f6";
+            if (remark === "Yesterday") return "#1D9BF0";
             if (remark.includes("days ago")) return "#8b5cf6";
             if (remark.includes("week")) return "#f59e0b";
             return "#ec4899";
@@ -467,24 +487,13 @@
             GAS_WEB_APP_URL = inputUrl;
             GEMINI_API_KEY = inputGemini;
             
-            localStorage.setItem('proptrack_gas_url', inputUrl);
-            localStorage.setItem('proptrack_gemini_key', inputGemini);
+            localStorage.setItem('goocambodia_gas_url', inputUrl);
+            localStorage.setItem('goocambodia_gemini_key', inputGemini);
             
-            updateModeBadge();
+            checkServerConfig();
             toggleSettings();
-            showToast(inputUrl ? "Connected to Google Sheets Backend!" : "Configuration saved.", "success");
+            showToast("Backend configuration saved!", "success");
             if (currentAgent) loadAgentHistory(true);
-        }
-
-        function updateModeBadge() {
-            const badge = document.getElementById('mode-badge');
-            if (GAS_WEB_APP_URL) {
-                badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800";
-                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Live Google Sheet Connected`;
-            } else {
-                badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800";
-                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> Demo Mode (No Sheet URL)`;
-            }
         }
 
         function showToast(message, type = "info") {
@@ -498,7 +507,7 @@
             } else if (type === "error") {
                 iconEl.className = "fa-solid fa-circle-exclamation text-rose-400";
             } else {
-                iconEl.className = "fa-solid fa-circle-info text-blue-400";
+                iconEl.className = "fa-solid fa-circle-info text-sky-400";
             }
 
             container.classList.remove('opacity-0', '-translate-y-4');
@@ -515,39 +524,45 @@
         // ==========================================
         async function handleLogin(e) {
             e.preventDefault();
+            if (!GAS_WEB_APP_URL) {
+                showToast("Server URL is not configured. Click ⚙️ to add your Apps Script URL.", "error");
+                toggleSettings();
+                return;
+            }
+
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
             const btn = document.getElementById('login-btn');
 
             btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Verifying...</span>`;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Signing In...</span>`;
+
+            const loginLocation = latestCoords 
+                ? `${latestCoords.lat}, ${latestCoords.lng} (https://maps.google.com/?q=${latestCoords.lat},${latestCoords.lng})` 
+                : "";
 
             try {
-                if (!GAS_WEB_APP_URL) {
-                    await new Promise(r => setTimeout(r, 400));
-                    if (username === "sokha" && password === "1234") {
-                        loginSuccess({ agentId: "AGT-001", username: "sokha", fullName: "Sokha Chan", phone: "012888999" });
-                    } else {
-                        throw new Error("Demo mode accepts 'sokha' / '1234', or configure your Google Sheet URL in ⚙️.");
-                    }
+                const response = await fetch(GAS_WEB_APP_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ 
+                        action: "login", 
+                        username, 
+                        password,
+                        location: loginLocation
+                    })
+                });
+                const res = await response.json();
+                if (res.status === "success") {
+                    loginSuccess(res.agent);
                 } else {
-                    const response = await fetch(GAS_WEB_APP_URL, {
-                        method: "POST",
-                        headers: { "Content-Type": "text/plain;charset=utf-8" },
-                        body: JSON.stringify({ action: "login", username, password })
-                    });
-                    const res = await response.json();
-                    if (res.status === "success") {
-                        loginSuccess(res.agent);
-                    } else {
-                        throw new Error(res.message || "Invalid credentials.");
-                    }
+                    throw new Error(res.message || "Invalid username or password.");
                 }
             } catch (err) {
                 showToast(err.message, "error");
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = `<span>Sign In to Dashboard</span> <i class="fa-solid fa-arrow-right"></i>`;
+                btn.innerHTML = `<span>Sign In</span> <i class="fa-solid fa-arrow-right"></i>`;
             }
         }
 
@@ -555,7 +570,6 @@
             currentAgent = agent;
             document.getElementById('agent-name-display').textContent = agent.fullName || agent.username;
             document.getElementById('agent-id-display').textContent = `ID: ${agent.agentId}`;
-            document.getElementById('agent-avatar').textContent = (agent.fullName || agent.username).substring(0, 2).toUpperCase();
 
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('dashboard-screen').classList.remove('hidden');
@@ -564,7 +578,7 @@
             loadAgentHistory(false);
             startGeoWatcher();
             fetchSingleLocation(false);
-            showToast(`Welcome back, ${agent.fullName || agent.username}!`, "success");
+            showToast(`Welcome, ${agent.fullName || agent.username}!`, "success");
         }
 
         function logout() {
@@ -574,6 +588,10 @@
                 geoWatchId = null;
             }
             currentAgent = null;
+            cachedTracks = [];
+            cachedProperties = [];
+            document.getElementById('username').value = "";
+            document.getElementById('password').value = "";
             document.getElementById('dashboard-screen').classList.add('hidden');
             document.getElementById('login-screen').classList.remove('hidden');
             showToast("Logged out safely.", "info");
@@ -597,48 +615,22 @@
         }
 
         async function loadAgentHistory(showNotification = false) {
+            if (!GAS_WEB_APP_URL || !currentAgent) return;
             const icon = document.getElementById('refresh-map-icon');
             if (icon) icon.classList.add('fa-spin');
 
             try {
-                if (!GAS_WEB_APP_URL) {
-                    const now = Date.now();
-                    const dayMs = 24 * 60 * 60 * 1000;
-                    cachedTracks = [
-                        { timestamp: new Date(now - 1 * dayMs).toISOString(), lat: 11.5520, lng: 104.9210 },
-                        { timestamp: new Date(now - 1 * dayMs + 60000).toISOString(), lat: 11.5555, lng: 104.9212 },
-                        { timestamp: new Date(now - 1 * dayMs + 120000).toISOString(), lat: 11.5590, lng: 104.9215 },
-                        { timestamp: new Date(now - 2 * dayMs).toISOString(), lat: 11.5480, lng: 104.9240 },
-                        { timestamp: new Date(now - 2 * dayMs + 60000).toISOString(), lat: 11.5485, lng: 104.9285 },
-                        { timestamp: new Date(now - 2 * dayMs + 120000).toISOString(), lat: 11.5515, lng: 104.9290 },
-                        { timestamp: new Date(now - 8 * dayMs).toISOString(), lat: 11.5720, lng: 104.8980 },
-                        { timestamp: new Date(now - 8 * dayMs + 60000).toISOString(), lat: 11.5750, lng: 104.9015 },
-                        { timestamp: new Date(now - 32 * dayMs).toISOString(), lat: 11.5660, lng: 104.9080 },
-                        { timestamp: new Date(now - 32 * dayMs + 60000).toISOString(), lat: 11.5665, lng: 104.9140 }
-                    ];
-                    cachedProperties = [
-                        {
-                            propertyCode: "PROP-1000",
-                            timestamp: new Date(now - 1 * dayMs + 60000).toISOString(),
-                            ownerPhone: "012 999 888",
-                            propertyType: "Shophouse / Flat",
-                            location: "11.5555, 104.9212",
-                            remark: "Corner shop $1,200/mo"
-                        }
-                    ];
+                const response = await fetch(GAS_WEB_APP_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: "getHistory", agentId: currentAgent.agentId })
+                });
+                const res = await response.json();
+                if (res.status === "success") {
+                    cachedTracks = res.tracks || [];
+                    cachedProperties = res.properties || [];
                 } else {
-                    const response = await fetch(GAS_WEB_APP_URL, {
-                        method: "POST",
-                        headers: { "Content-Type": "text/plain;charset=utf-8" },
-                        body: JSON.stringify({ action: "getHistory", agentId: currentAgent.agentId })
-                    });
-                    const res = await response.json();
-                    if (res.status === "success") {
-                        cachedTracks = res.tracks || [];
-                        cachedProperties = res.properties || [];
-                    } else {
-                        throw new Error(res.message || "Could not load route history.");
-                    }
+                    throw new Error(res.message || "Could not load route history.");
                 }
 
                 renderMapHistory();
@@ -657,7 +649,7 @@
             activeDayFilter = filterLabel;
             document.querySelectorAll('.day-filter-btn').forEach(btn => {
                 if (btn.textContent.trim() === filterLabel || (filterLabel === 'ALL' && btn.textContent.trim() === 'All Days')) {
-                    btn.className = "day-filter-btn active px-2.5 py-1 rounded-full font-semibold bg-indigo-600 text-white whitespace-nowrap";
+                    btn.className = "day-filter-btn active px-2.5 py-1 rounded-full font-semibold bg-[#1D9BF0] text-white whitespace-nowrap";
                 } else {
                     btn.className = "day-filter-btn px-2.5 py-1 rounded-full font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap";
                 }
@@ -684,7 +676,7 @@
 
             const dayKeys = Object.keys(groupedByDay);
             if (dayKeys.length === 0 && cachedProperties.length === 0) {
-                legendContainer.innerHTML = `<span class="text-slate-400">No recorded roads found for "${activeDayFilter}". Start GPS tracking to record your path!</span>`;
+                legendContainer.innerHTML = `<span class="text-slate-400">No recorded roads found for "${activeDayFilter}". Start GPS tracking to record your route!</span>`;
             }
 
             dayKeys.forEach(remarkDay => {
@@ -733,7 +725,7 @@
                     const marker = L.marker([lat, lng]).addTo(mapLayerGroup);
                     marker.bindPopup(`
                         <div style="font-family:Inter,sans-serif;min-width:160px;">
-                            <div style="font-weight:700;color:#1d4ed8;font-size:12px;">${prop.propertyCode || 'PROP'} • ${remarkDay}</div>
+                            <div style="font-weight:700;color:#1D9BF0;font-size:12px;">${prop.propertyCode || 'PROP'} • ${remarkDay}</div>
                             <div style="font-weight:600;font-size:12px;margin-top:2px;">${prop.propertyType}</div>
                             <div style="font-size:11px;color:#334155;">📞 ${prop.ownerPhone}</div>
                             ${prop.remark ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">"${prop.remark}"</div>` : ''}
@@ -749,7 +741,10 @@
 
         function renderSavedPropertiesList() {
             const logContainer = document.getElementById('activity-log');
-            if (!cachedProperties || cachedProperties.length === 0) return;
+            if (!cachedProperties || cachedProperties.length === 0) {
+                logContainer.innerHTML = `<div class="text-xs text-slate-400 text-center py-4 bg-slate-50 rounded-xl border border-slate-100">No property signs submitted yet.</div>`;
+                return;
+            }
 
             logContainer.innerHTML = "";
             [...cachedProperties].reverse().slice(0, 10).forEach(prop => {
@@ -759,11 +754,11 @@
                 item.innerHTML = `
                     <div class="space-y-0.5">
                         <div class="flex items-center gap-1.5">
-                            <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-mono font-bold text-[11px]">${prop.propertyCode || 'PROP'}</span>
+                            <span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 font-mono font-bold text-[11px]">${prop.propertyCode || 'PROP'}</span>
                             <span class="font-bold text-slate-800">${prop.propertyType}</span>
                             <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 font-medium">${dayLabel}</span>
                         </div>
-                        <div class="text-blue-600 font-semibold">${prop.ownerPhone}</div>
+                        <div class="text-[#1D9BF0] font-semibold">${prop.ownerPhone}</div>
                         <div class="text-slate-500 truncate max-w-[230px]">${prop.remark || prop.location}</div>
                     </div>
                     <span class="px-2 py-1 rounded-md bg-emerald-100 text-emerald-700 font-semibold text-[11px]">
@@ -786,9 +781,9 @@
                         lat: Number(data.latitude).toFixed(6),
                         lng: Number(data.longitude).toFixed(6)
                     };
-                    simulatedMode = true;
+                    approxLocationMode = true;
                     const helper = document.getElementById('gps-helper-text');
-                    helper.textContent = `Using network location (${data.city || 'Approximate'}). Allow browser GPS for exact street accuracy.`;
+                    helper.textContent = `Using network location (${data.city || 'Approximate'}). Enable device GPS for street-level accuracy.`;
                     helper.classList.remove('hidden');
                     updateLocationUI(latestCoords.lat, latestCoords.lng, true);
                     return true;
@@ -803,7 +798,7 @@
             if (!navigator.geolocation || geoWatchId !== null) return;
             geoWatchId = navigator.geolocation.watchPosition(
                 (pos) => {
-                    simulatedMode = false;
+                    approxLocationMode = false;
                     latestCoords = {
                         lat: pos.coords.latitude.toFixed(6),
                         lng: pos.coords.longitude.toFixed(6)
@@ -821,27 +816,12 @@
         function updateLocationUI(lat, lng, forceOverwriteInput = false) {
             const coordsEl = document.getElementById('gps-coords');
             if (coordsEl) {
-                coordsEl.textContent = `${lat}, ${lng}${simulatedMode ? ' (Approx)' : ''}`;
+                coordsEl.textContent = `${lat}, ${lng}${approxLocationMode ? ' (Approx)' : ''}`;
             }
             const locInput = document.getElementById('property-location');
             if (locInput && (forceOverwriteInput || !locInput.value || locInput.value.startsWith("Fetching") || locInput.value.includes("maps.google.com"))) {
                 locInput.value = `${lat}, ${lng} (https://maps.google.com/?q=${lat},${lng})`;
             }
-        }
-
-        function useSimulatedGps() {
-            simulatedMode = true;
-            simLat += (Math.random() - 0.5) * 0.0006;
-            simLng += (Math.random() - 0.5) * 0.0006;
-            latestCoords = {
-                lat: simLat.toFixed(6),
-                lng: simLng.toFixed(6)
-            };
-            const helper = document.getElementById('gps-helper-text');
-            helper.textContent = "Using simulated field GPS (Browser/Preview blocked hardware GPS).";
-            helper.classList.remove('hidden');
-            updateLocationUI(latestCoords.lat, latestCoords.lng, true);
-            showToast("Test GPS coordinates loaded!", "info");
         }
 
         function toggleTracking() {
@@ -869,22 +849,16 @@
         }
 
         function sendGpsPing() {
-            if (simulatedMode) {
-                simLat += (Math.random() - 0.5) * 0.0004;
-                simLng += (Math.random() - 0.5) * 0.0004;
-                latestCoords = { lat: simLat.toFixed(6), lng: simLng.toFixed(6) };
-                transmitPing(latestCoords.lat, latestCoords.lng);
-                return;
-            }
-
             if (!navigator.geolocation) {
-                useSimulatedGps();
-                transmitPing(latestCoords.lat, latestCoords.lng);
+                fetchIpFallbackLocation().then(ok => {
+                    if (ok && latestCoords) transmitPing(latestCoords.lat, latestCoords.lng);
+                });
                 return;
             }
 
             navigator.geolocation.getCurrentPosition(
                 (position) => {
+                    approxLocationMode = false;
                     latestCoords = {
                         lat: position.coords.latitude.toFixed(6),
                         lng: position.coords.longitude.toFixed(6)
@@ -892,19 +866,20 @@
                     transmitPing(latestCoords.lat, latestCoords.lng);
                 },
                 async (error) => {
-                    console.warn("GPS Ping fallback:", error.message);
+                    console.warn("GPS Ping warning:", error.message);
                     if (latestCoords) {
                         transmitPing(latestCoords.lat, latestCoords.lng);
                     } else {
                         const gotIpLoc = await fetchIpFallbackLocation();
-                        if (!gotIpLoc) {
-                            document.getElementById('gps-coords').textContent = "GPS Blocked -> Using Test GPS";
-                            useSimulatedGps();
+                        if (gotIpLoc && latestCoords) {
+                            transmitPing(latestCoords.lat, latestCoords.lng);
+                        } else {
+                            document.getElementById('gps-coords').textContent = "Enable Location Permission";
+                            showToast("Please enable GPS Location on your phone.", "error");
                         }
-                        transmitPing(latestCoords.lat, latestCoords.lng);
                     }
                 },
-                { enableHighAccuracy: true, timeout: 4500, maximumAge: 5000 }
+                { enableHighAccuracy: true, timeout: 6000, maximumAge: 5000 }
             );
         }
 
@@ -939,14 +914,14 @@
 
         function fetchSingleLocation(forceToast = false) {
             if (!navigator.geolocation) {
-                fetchIpFallbackLocation().then(ok => { if (!ok) useSimulatedGps(); });
+                fetchIpFallbackLocation();
                 return;
             }
             
             document.getElementById('property-location').placeholder = "Locating GPS...";
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
-                    simulatedMode = false;
+                    approxLocationMode = false;
                     latestCoords = {
                         lat: pos.coords.latitude.toFixed(6),
                         lng: pos.coords.longitude.toFixed(6)
@@ -962,13 +937,13 @@
                     } else {
                         const gotIpLoc = await fetchIpFallbackLocation();
                         if (gotIpLoc) {
-                            if (forceToast) showToast("Browser GPS blocked; using approximate network location.", "info");
+                            if (forceToast) showToast("Using approximate network location.", "info");
                         } else {
                             const helper = document.getElementById('gps-helper-text');
-                            helper.textContent = "Location permission denied. Enable Location in browser settings or click 'Test GPS'.";
+                            helper.textContent = "Location permission denied. Please allow GPS access in your browser settings.";
                             helper.classList.remove('hidden');
-                            document.getElementById('property-location').placeholder = "Type address or click 'Test GPS' above";
-                            if (forceToast) showToast("GPS blocked. Click 'Test GPS' or enable browser location.", "error");
+                            document.getElementById('property-location').placeholder = "Enter location or enable phone GPS";
+                            if (forceToast) showToast("Please allow Location access in your browser.", "error");
                         }
                     }
                 },
@@ -977,7 +952,7 @@
         }
 
         // ==========================================
-        // 4. HYBRID PHOTO CAPTURE (CLOUD AI + ON-DEVICE OCR)
+        // 4. HYBRID PHOTO CAPTURE (20-SEC TIMEOUT + LOCAL OCR)
         // ==========================================
         function resizeImageToBase64(img, maxWidth, quality) {
             const canvas = document.createElement('canvas');
@@ -1065,7 +1040,7 @@
             aiBadge.classList.add('hidden');
             aiErrorBox.classList.add('hidden');
 
-            const MAX_SCAN_MS = 20000; // 20-second strict limit
+            const MAX_SCAN_MS = 20000;
             const abortController = new AbortController();
             const startTime = performance.now();
 
@@ -1074,7 +1049,6 @@
                 timerText.textContent = `${sec}s / 20.0s`;
             }, 100);
 
-            // Hard 20-second timeout promise that aborts active network requests
             let timeoutId;
             const timeoutPromise = new Promise((_, reject) => {
                 timeoutId = setTimeout(() => {
@@ -1086,7 +1060,6 @@
             const performScanWork = async () => {
                 let cloudError = "";
 
-                // 1. Try Direct Gemini API if user entered key in Settings
                 if (GEMINI_API_KEY) {
                     const models = ["gemini-flash-latest", "gemini-2.5-flash-lite", "gemini-3.8-flash"];
                     const prompt = `Extract from this rental sign:
@@ -1135,7 +1108,6 @@ Return single JSON object only: {"phones":"","propertyType":"","summary":""}`;
                         cloudError = result.error?.message || `Gemini API HTTP ${response.status}`;
                     }
                 } else if (GAS_WEB_APP_URL) {
-                    // 2. Try Google Apps Script Gemini Relay
                     const response = await fetch(GAS_WEB_APP_URL, {
                         method: "POST",
                         signal: abortController.signal,
@@ -1154,7 +1126,6 @@ Return single JSON object only: {"phones":"","propertyType":"","summary":""}`;
 
                 if (abortController.signal.aborted) return;
 
-                // 3. Automatic On-Device OCR Fallback
                 const localResult = await runOnDeviceOcrFallback(base64Image);
                 if (abortController.signal.aborted) return;
 
@@ -1209,6 +1180,11 @@ Return single JSON object only: {"phones":"","propertyType":"","summary":""}`;
         // ==========================================
         async function submitPropertyData(e) {
             e.preventDefault();
+            if (!GAS_WEB_APP_URL) {
+                showToast("Server URL is not configured.", "error");
+                return;
+            }
+
             const ownerPhone = document.getElementById('owner-phone').value.trim();
             const location = document.getElementById('property-location').value.trim();
             const propertyType = document.getElementById('property-type').value;
@@ -1235,23 +1211,17 @@ Return single JSON object only: {"phones":"","propertyType":"","summary":""}`;
             };
 
             try {
-                let finalPropertyCode = `PROP-${demoPropCounter++}`;
-                if (!GAS_WEB_APP_URL) {
-                    await new Promise(r => setTimeout(r, 800));
-                    showToast(`Demo Submitted (${finalPropertyCode})!`, "success");
-                } else {
-                    const response = await fetch(GAS_WEB_APP_URL, {
-                        method: "POST",
-                        headers: { "Content-Type": "text/plain;charset=utf-8" },
-                        body: JSON.stringify(payload)
-                    });
-                    const res = await response.json();
-                    if (res.status !== "success") {
-                        throw new Error(res.message || "Failed to submit property.");
-                    }
-                    finalPropertyCode = res.propertyCode || finalPropertyCode;
-                    showToast(`Saved ${finalPropertyCode} to Sheet, Drive & Telegram!`, "success");
+                const response = await fetch(GAS_WEB_APP_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+                const res = await response.json();
+                if (res.status !== "success") {
+                    throw new Error(res.message || "Failed to submit property.");
                 }
+                const finalPropertyCode = res.propertyCode || "PROP";
+                showToast(`Saved ${finalPropertyCode} to Sheet, Drive & Telegram!`, "success");
 
                 cachedProperties.push({
                     propertyCode: finalPropertyCode,
