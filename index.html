@@ -131,89 +131,9 @@
                 </button>
             </form>
 
-            <!-- Install App on Phone Button -->
-            <div id="install-app-wrapper" class="mt-4 pt-4 border-t border-slate-100">
-                <button type="button" id="install-app-btn" onclick="openInstallGuideModal()"
-                    class="w-full bg-slate-900 hover:bg-slate-800 active:scale-[0.99] text-white font-semibold py-3 px-4 rounded-xl shadow-sm transition flex items-center justify-center gap-2 text-sm">
-                    <i class="fa-solid fa-mobile-screen-button text-[#1D9BF0] text-base"></i>
-                    <span>Install App on Phone</span>
-                </button>
-            </div>
-
-            <p class="text-center text-[11px] text-slate-400 mt-5">
+            <p class="text-center text-[11px] text-slate-400 mt-6">
                 &copy; Goo Cambodia Real Estate • Authorized Field Agents Only
             </p>
-        </div>
-    </div>
-
-    <!-- Android & iOS Step-by-Step Install Guide Modal -->
-    <div id="install-guide-modal" onclick="if(event.target === this) closeInstallGuideModal()" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 relative my-auto">
-            <button type="button" onclick="closeInstallGuideModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <div class="text-center mb-4">
-                <div class="w-14 h-14 mx-auto mb-2.5 rounded-2xl bg-[#1D9BF0] text-white flex items-center justify-center shadow-md shadow-sky-500/25">
-                    <i class="fa-solid fa-mobile-screen-button text-2xl"></i>
-                </div>
-                <h3 class="text-lg font-extrabold text-slate-900">Install Goo Cambodia App</h3>
-                <p class="text-xs text-slate-500 mt-0.5">Follow these 3 quick steps to add the app icon to your phone Home Screen:</p>
-            </div>
-
-            <!-- Native 1-Tap Install Banner (Shows automatically if Chrome supports direct prompt) -->
-            <div id="native-prompt-box" class="hidden mb-4 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-center">
-                <p class="text-xs font-semibold text-emerald-800 mb-2">Your browser supports 1-tap installation!</p>
-                <button type="button" onclick="triggerNativePrompt()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow transition">
-                    <i class="fa-solid fa-download mr-1"></i> Install Now
-                </button>
-            </div>
-
-            <!-- Device Switcher Tabs -->
-            <div class="grid grid-cols-2 gap-1.5 bg-slate-100 p-1 rounded-xl mb-4 text-xs font-bold">
-                <button type="button" id="tab-android" onclick="switchInstallTab('android')" class="py-2 rounded-lg bg-white text-slate-900 shadow-2xs transition flex items-center justify-center gap-1.5">
-                    <i class="fa-brands fa-android text-emerald-600 text-sm"></i> Android
-                </button>
-                <button type="button" id="tab-ios" onclick="switchInstallTab('ios')" class="py-2 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center justify-center gap-1.5">
-                    <i class="fa-brands fa-apple text-slate-800 text-sm"></i> iPhone (iOS)
-                </button>
-            </div>
-
-            <!-- Android Guide -->
-            <div id="guide-android" class="bg-slate-50 rounded-2xl p-4 text-left text-xs text-slate-700 space-y-3 border border-slate-200/80 mb-5">
-                <div class="flex items-start gap-3">
-                    <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">1</span>
-                    <span class="leading-relaxed">Open this website using <b>Google Chrome</b> on your Android phone.</span>
-                </div>
-                <div class="flex items-start gap-3">
-                    <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">2</span>
-                    <span class="leading-relaxed">Tap the <b>Three Dots (⋮)</b> menu button at the top-right corner of Chrome.</span>
-                </div>
-                <div class="flex items-start gap-3">
-                    <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">3</span>
-                    <span class="leading-relaxed">Tap <b>"Add to Home screen"</b> or <b>"Install app"</b>, then tap <b>Install / Add</b> to confirm.</span>
-                </div>
-            </div>
-
-            <!-- iOS Guide -->
-            <div id="guide-ios" class="hidden bg-slate-50 rounded-2xl p-4 text-left text-xs text-slate-700 space-y-3 border border-slate-200/80 mb-5">
-                <div class="flex items-start gap-3">
-                    <span class="w-6 h-6 rounded-full bg-[#1D9BF0] text-white font-bold flex items-center justify-center shrink-0 text-xs">1</span>
-                    <span class="leading-relaxed">Open this website using <b>Safari</b> on your iPhone or iPad.</span>
-                </div>
-                <div class="flex items-start gap-3">
-                    <span class="w-6 h-6 rounded-full bg-[#1D9BF0] text-white font-bold flex items-center justify-center shrink-0 text-xs">2</span>
-                    <span class="leading-relaxed">Tap the <b>Share</b> button <span class="inline-flex items-center justify-center px-1.5 py-0.5 bg-white border border-slate-300 rounded text-[#1D9BF0]"><i class="fa-solid fa-arrow-up-from-bracket"></i></span> at the bottom bar of Safari.</span>
-                </div>
-                <div class="flex items-start gap-3">
-                    <span class="w-6 h-6 rounded-full bg-[#1D9BF0] text-white font-bold flex items-center justify-center shrink-0 text-xs">3</span>
-                    <span class="leading-relaxed">Scroll down and tap <b>"Add to Home Screen"</b>, then tap <b>Add</b> in the top-right corner.</span>
-                </div>
-            </div>
-
-            <button type="button" onclick="closeInstallGuideModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl text-sm transition">
-                Done
-            </button>
         </div>
     </div>
 
@@ -462,7 +382,6 @@
         let cachedTracks = [];
         let cachedProperties = [];
         let activeDayFilter = "ALL";
-        let deferredInstallPrompt = null;
 
         // ==========================================
         // PWA MANIFEST & HOME SCREEN ICON GENERATOR
@@ -489,67 +408,6 @@
             const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
             const manifestEl = document.getElementById('dynamic-manifest');
             if (manifestEl) manifestEl.href = URL.createObjectURL(manifestBlob);
-
-            // Hide install button if already running inside the installed standalone app
-            if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-                const wrapper = document.getElementById('install-app-wrapper');
-                if (wrapper) wrapper.classList.add('hidden');
-            }
-        }
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredInstallPrompt = e;
-            const nativeBox = document.getElementById('native-prompt-box');
-            if (nativeBox) nativeBox.classList.remove('hidden');
-        });
-
-        window.addEventListener('appinstalled', () => {
-            deferredInstallPrompt = null;
-            const wrapper = document.getElementById('install-app-wrapper');
-            if (wrapper) wrapper.classList.add('hidden');
-            closeInstallGuideModal();
-            showToast("Goo Cambodia App installed on your phone!", "success");
-        });
-
-        function openInstallGuideModal() {
-            // Automatically select iOS or Android tab based on the agent's phone
-            const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-            switchInstallTab(isIos ? 'ios' : 'android');
-            document.getElementById('install-guide-modal').classList.remove('hidden');
-        }
-
-        function closeInstallGuideModal() {
-            document.getElementById('install-guide-modal').classList.add('hidden');
-        }
-
-        function switchInstallTab(platform) {
-            const tabAndroid = document.getElementById('tab-android');
-            const tabIos = document.getElementById('tab-ios');
-            const guideAndroid = document.getElementById('guide-android');
-            const guideIos = document.getElementById('guide-ios');
-
-            if (platform === 'ios') {
-                tabIos.className = "py-2 rounded-lg bg-white text-slate-900 shadow-2xs transition flex items-center justify-center gap-1.5";
-                tabAndroid.className = "py-2 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center justify-center gap-1.5";
-                guideIos.classList.remove('hidden');
-                guideAndroid.classList.add('hidden');
-            } else {
-                tabAndroid.className = "py-2 rounded-lg bg-white text-slate-900 shadow-2xs transition flex items-center justify-center gap-1.5";
-                tabIos.className = "py-2 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center justify-center gap-1.5";
-                guideAndroid.classList.remove('hidden');
-                guideIos.classList.add('hidden');
-            }
-        }
-
-        async function triggerNativePrompt() {
-            if (!deferredInstallPrompt) return;
-            deferredInstallPrompt.prompt();
-            const { outcome } = await deferredInstallPrompt.userChoice;
-            if (outcome === 'accepted') {
-                deferredInstallPrompt = null;
-                closeInstallGuideModal();
-            }
         }
 
         window.onload = () => {
@@ -745,6 +603,12 @@
                 }
             } catch (err) {
                 showToast(err.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>Sign In</span> <i class="fa-solid fa-arrow-right"></i>`;
+            }
+        }
+
         function loginSuccess(agent, isRestoredSession = false) {
             currentAgent = agent;
             localStorage.setItem('goocambodia_logged_in_agent', JSON.stringify(agent));
